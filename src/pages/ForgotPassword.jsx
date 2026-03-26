@@ -1,0 +1,130 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Mail, Shield, ArrowLeft, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { useToast } from '../context/ToastContext'
+
+export default function ForgotPassword() {
+  const toast = useToast()
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!email) {
+      setError('Please enter your email address.')
+      return
+    }
+    setError('')
+    setLoading(true)
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      setSubmitted(true)
+      toast.success('Password reset instructions sent to your email.', 'Check your inbox')
+    } catch (err) {
+      setError('Failed to send reset email. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-[#F8FAFF] flex">
+      {/* Left panel */}
+      <div className="hidden lg:flex flex-1 bg-hero-gradient flex-col items-center justify-center p-12 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_20%_40%,white,transparent_60%)]" />
+        <div className="absolute bottom-0 right-0 w-64 h-64 rounded-full bg-white/5 blur-2xl" />
+        <div className="relative text-center max-w-md">
+          <img src="/logo.png" alt="ThreatGuardAI" className="w-24 h-24 object-contain mx-auto mb-8 drop-shadow-glow" />
+          <h1 className="text-4xl font-extrabold text-white mb-4 leading-tight">
+            Account Recovery
+          </h1>
+          <p className="text-white/70 text-lg leading-relaxed">
+            Don't worry, it happens to the best of us. We'll help you get back into your account in no time.
+          </p>
+        </div>
+      </div>
+
+      {/* Right panel */}
+      <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-8 bg-[#F8FAFF]">
+        <div className="w-full max-w-[480px] bg-white p-8 sm:p-12 rounded-[2.5rem] border border-navy-100/40 shadow-[0_20px_50px_rgba(13,27,62,0.05)] animate-fade-up">
+          <div className="flex flex-col items-center mb-6 lg:hidden">
+            <img src="/logo.png" alt="ThreatGuardAI" className="w-16 h-16 object-contain" />
+          </div>
+
+          {!submitted ? (
+            <>
+              <div className="mb-10 text-center sm:text-left">
+                <h2 className="text-3xl font-extrabold text-navy-900 mb-3 tracking-tight">Forgot Password?</h2>
+                <p className="text-navy-500 text-sm leading-relaxed">Enter the email address associated with your account and we'll send you instructions to reset your password.</p>
+              </div>
+
+              {error && (
+                <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl mb-8 text-red-700 text-sm animate-fade-in">
+                  <AlertCircle size={18} className="flex-shrink-0" />
+                  <p className="font-medium">{error}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-navy-700 uppercase tracking-wider ml-1">Email Address</label>
+                  <div className="relative group">
+                    <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-navy-300 group-focus-within:text-brand-blue transition-colors pointer-events-none" />
+                      <input 
+                        type="email" 
+                        className="input-field pl-12 h-12 bg-navy-50/30 border-navy-100 focus:bg-white transition-all" 
+                        placeholder="ahad@example.com"
+                        value={email} 
+                        onChange={e => setEmail(e.target.value)} 
+                        autoComplete="email" 
+                      />
+                  </div>
+                </div>
+                
+                <div className="pt-2 flex justify-center">
+                  <button type="submit" disabled={loading} className="btn-primary w-[60%] py-3.5 text-base font-bold shadow-glow-sm hover:shadow-glow transition-all">
+                    {loading ? (
+                      <span className="flex items-center gap-2 justify-center">
+                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Sending...
+                      </span>
+                    ) : (<span className="flex items-center gap-2 justify-center">Send Instructions <ArrowRight size={18} /></span>)}
+                  </button>
+                </div>
+              </form>
+            </>
+          ) : (
+            <div className="text-center py-4">
+              <div className="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-emerald-500">
+                <CheckCircle2 size={40} />
+              </div>
+              <h2 className="text-3xl font-extrabold text-navy-900 mb-3 tracking-tight">Check Your Email</h2>
+              <p className="text-navy-500 text-sm leading-relaxed mb-8">
+                We've sent password reset instructions to <span className="font-bold text-navy-900">{email}</span>. Please check your inbox and follow the link provided.
+              </p>
+              <button 
+                onClick={() => setSubmitted(false)} 
+                className="text-sm font-bold text-brand-blue hover:text-blue-700 transition-colors"
+              >
+                Didn't receive the email? Try again
+              </button>
+            </div>
+          )}
+
+          <div className="mt-8 pt-6 border-t border-navy-50">
+            <Link to="/login" className="text-sm font-bold text-navy-500 hover:text-navy-900 transition-colors flex items-center justify-center gap-2">
+              <ArrowLeft size={16} /> Back to Sign In
+            </Link>
+            <Link to="/" className="mt-6 text-sm font-bold text-navy-500 hover:text-navy-900 transition-colors flex items-center justify-center gap-2">
+              <ArrowLeft size={16} /> Back
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
