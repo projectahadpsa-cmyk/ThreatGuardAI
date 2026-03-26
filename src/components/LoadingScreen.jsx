@@ -21,27 +21,10 @@ export default function LoadingScreen() {
             ease: "easeOut",
             times: [0, 0.4, 0.6, 0.8, 1]
           }}
-          className="relative mb-8"
+          className="mb-8"
         >
-          {/* Outer Ring */}
-          <motion.div 
-            animate={{ rotate: 360 }}
-            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-            className="absolute -inset-4 border-2 border-dashed border-brand-blue/20 rounded-full"
-          />
-          
-          {/* Inner Glow */}
-          <motion.div 
-            animate={{ 
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.6, 0.3]
-            }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-0 bg-brand-blue/20 blur-xl rounded-full"
-          />
-
           {/* Main Logo Image */}
-          <div className="relative w-32 h-32 bg-white rounded-3xl shadow-card-lg flex items-center justify-center border border-navy-100/50 overflow-hidden">
+          <div className="w-32 h-32 bg-white rounded-3xl shadow-card-lg flex items-center justify-center border border-navy-100/50 overflow-hidden">
             <img 
               src="/logo.png" 
               alt="ThreatGuardAI Logo" 
