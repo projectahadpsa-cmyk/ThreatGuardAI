@@ -19,24 +19,7 @@ const SCAN_STEPS = [
   { id: 'risk', label: 'Risk Assessment',     icon: ShieldAlert },
 ]
 
-const SAMPLE_DATA = {
-  normal: {
-    duration: 0, protocol_type: 1, service: 20, flag: 9, src_bytes: 491, dst_bytes: 0, land: 0, wrong_fragment: 0, urgent: 0,
-    hot: 0, num_failed_logins: 0, logged_in: 0, num_compromised: 0, root_shell: 0, su_attempted: 0, num_root: 0, num_file_creations: 0,
-    num_shells: 0, num_access_files: 0, num_outbound_cmds: 0, is_host_login: 0, is_guest_login: 0, count: 2, srv_count: 2,
-    serror_rate: 0, srv_serror_rate: 0, rerror_rate: 0, srv_rerror_rate: 0, same_srv_rate: 1, diff_srv_rate: 0, srv_diff_host_rate: 0,
-    dst_host_count: 150, dst_host_srv_count: 25, dst_host_same_srv_rate: 0.17, dst_host_diff_srv_rate: 0.03, dst_host_same_src_port_rate: 0.17,
-    dst_host_srv_diff_host_rate: 0, dst_host_serror_rate: 0, dst_host_srv_serror_rate: 0, dst_host_rerror_rate: 0.05, dst_host_srv_rerror_rate: 0
-  },
-  attack: {
-    duration: 0, protocol_type: 1, service: 49, flag: 5, src_bytes: 0, dst_bytes: 0, land: 0, wrong_fragment: 0, urgent: 0,
-    hot: 0, num_failed_logins: 0, logged_in: 0, num_compromised: 0, root_shell: 0, su_attempted: 0, num_root: 0, num_file_creations: 0,
-    num_shells: 0, num_access_files: 0, num_outbound_cmds: 0, is_host_login: 0, is_guest_login: 0, count: 123, srv_count: 6,
-    serror_rate: 1, srv_serror_rate: 1, rerror_rate: 0, srv_rerror_rate: 0, same_srv_rate: 0.05, diff_srv_rate: 0.07, srv_diff_host_rate: 0,
-    dst_host_count: 255, dst_host_srv_count: 26, dst_host_same_srv_rate: 0.1, dst_host_diff_srv_rate: 0.05, dst_host_same_src_port_rate: 0,
-    dst_host_srv_diff_host_rate: 0, dst_host_serror_rate: 1, dst_host_srv_serror_rate: 1, dst_host_rerror_rate: 0, dst_host_srv_rerror_rate: 0
-  }
-}
+// Sample data removed - users must input real data
 
 const FEATURE_GROUPS = [
   {
@@ -105,11 +88,7 @@ const FEATURE_GROUPS = [
 const ALL_FIELDS = FEATURE_GROUPS.flatMap(g => g.fields)
 const INIT_FORM  = Object.fromEntries(ALL_FIELDS.map(f => [f.name, f.default]))
 
-const SCAN_PROFILES = [
-  { id: 'web', label: 'Web Server', icon: Wifi, data: SAMPLE_DATA.normal },
-  { id: 'db',  label: 'Database',   icon: Database, data: { ...SAMPLE_DATA.normal, service: 3306 } },
-  { id: 'iot', label: 'IoT Device', icon: Cpu, data: { ...SAMPLE_DATA.normal, protocol_type: 2 } },
-]
+// Quick profiles removed - users must input real network data
 
 export default function Detection() {
   const { token } = useAuth()
@@ -147,12 +126,7 @@ export default function Detection() {
     toast.info('All fields reset to default values.') 
   }
 
-  const loadSample = (type) => {
-    const data = SAMPLE_DATA[type]
-    setForm(data)
-    setJsonInput(JSON.stringify(data, null, 2))
-    toast.success(`Loaded ${type} sample data.`, 'Sample Loaded')
-  }
+  // Sample data loading removed - only real user input allowed
 
   const handleCSV = (file) => {
     if (!file) return
@@ -405,19 +379,7 @@ export default function Detection() {
         </div>
       </div>
 
-      {/* Quick Profiles */}
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="text-[10px] font-bold text-navy-400 uppercase tracking-wider mr-1">Quick Profiles:</span>
-        {SCAN_PROFILES.map(p => {
-          const Icon = p.icon
-          return (
-            <button key={p.id} onClick={() => { setForm(p.data); setJsonInput(JSON.stringify(p.data, null, 2)); toast.success(`Applied ${p.label} profile.`) }}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-navy-100 rounded-full text-xs font-bold text-navy-600 hover:border-brand-blue hover:text-brand-blue transition-all">
-              <Icon size={12} /> {p.label}
-            </button>
-          )
-        })}
-      </div>
+
 
       {error && (
         <div className="flex items-center gap-2.5 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
@@ -433,14 +395,7 @@ export default function Detection() {
               <p className="text-sm font-semibold text-navy-600">
                 {ALL_FIELDS.length} features
               </p>
-              <div className="flex gap-2">
-                <button onClick={() => loadSample('normal')} className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md hover:bg-emerald-100 transition-colors">
-                  Normal Sample
-                </button>
-                <button onClick={() => loadSample('attack')} className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-1 rounded-md hover:bg-red-100 transition-colors">
-                  Attack Sample
-                </button>
-              </div>
+
             </div>
             <button onClick={() => setShowResetConfirm(true)} className="btn-ghost text-xs gap-1.5">
               <RefreshCw size={13} /> Reset all
@@ -486,10 +441,7 @@ export default function Detection() {
             <p className="text-sm font-semibold text-navy-600 flex items-center gap-2">
               <Code size={16} /> Raw JSON Payload
             </p>
-            <div className="flex gap-2">
-              <button onClick={() => loadSample('normal')} className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">Normal</button>
-              <button onClick={() => loadSample('attack')} className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-1 rounded-md">Attack</button>
-            </div>
+
           </div>
           <textarea 
             className="w-full h-96 p-4 font-mono text-xs bg-navy-900 text-emerald-400 rounded-2xl border-none focus:ring-2 focus:ring-brand-blue resize-none"
