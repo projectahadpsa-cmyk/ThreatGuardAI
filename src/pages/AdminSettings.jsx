@@ -37,91 +37,78 @@ export default function AdminSettings() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">System Settings & Logs</h1>
-        <p className="text-gray-500">Configure system parameters and monitor administrative activity</p>
+        <h1 className="page-title text-2xl sm:text-3xl">System Settings & Logs</h1>
+        <p className="section-subtitle mt-1">Configure system parameters and monitor administrative activity</p>
       </div>
 
-      <div className="flex gap-4 border-b border-gray-200">
+      <div className="flex gap-2 sm:gap-4 border-b border-navy-100 overflow-x-auto">
         <button
           onClick={() => setActiveTab('logs')}
-          className={`pb-4 px-4 text-sm font-medium transition-colors relative ${
-            activeTab === 'logs' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'
+          className={`pb-3 sm:pb-4 px-3 sm:px-4 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap ${
+            activeTab === 'logs' ? 'text-brand-blue' : 'text-navy-500 hover:text-navy-700'
           }`}
         >
           System Logs
-          {activeTab === 'logs' && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}
+          {activeTab === 'logs' && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-blue" />}
         </button>
         <button
           onClick={() => setActiveTab('config')}
-          className={`pb-4 px-4 text-sm font-medium transition-colors relative ${
-            activeTab === 'config' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'
+          className={`pb-3 sm:pb-4 px-3 sm:px-4 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap ${
+            activeTab === 'config' ? 'text-brand-blue' : 'text-navy-500 hover:text-navy-700'
           }`}
         >
           Configuration
-          {activeTab === 'config' && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}
+          {activeTab === 'config' && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-blue" />}
         </button>
       </div>
 
       {activeTab === 'logs' ? (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-              <History className="h-4 w-4 text-indigo-600" />
+        <div className="card p-0 overflow-hidden">
+          <div className="p-4 sm:p-6 border-b border-navy-100 flex justify-between items-center bg-navy-50">
+            <h3 className="font-semibold text-navy-900 flex items-center gap-2 text-sm sm:text-base">
+              <History className="h-4 w-4 text-brand-blue" />
               Administrative Activity
             </h3>
             <button 
               onClick={fetchLogs}
-              className="p-2 text-gray-500 hover:text-indigo-600 rounded-lg transition-colors"
+              className="p-2 text-navy-500 hover:text-brand-blue rounded-lg transition-colors"
               title="Refresh Logs"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
           </div>
           <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="data-table w-full min-w-max">
               <thead className="sticky top-0 bg-white shadow-sm">
-                <tr className="border-b border-gray-100">
-                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Timestamp</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Admin</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Action</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Details</th>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Admin</th>
+                  <th>Action</th>
+                  <th>Details</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody>
                 {loading && logs.length === 0 ? (
                   [...Array(5)].map((_, i) => (
                     <tr key={i} className="animate-pulse">
-                      <td colSpan="4" className="px-6 py-4 h-12 bg-gray-50/50"></td>
+                      <td colSpan="4" className="h-12 bg-navy-50/50"></td>
                     </tr>
                   ))
                 ) : logs.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="px-6 py-12 text-center text-gray-500">No activity logs found.</td>
+                    <td colSpan="4" className="px-6 py-8 text-center text-navy-400 text-sm">
+                      No administrative logs available.
+                    </td>
                   </tr>
                 ) : (
-                  logs.map((log) => (
-                    <tr key={log.id} className="hover:bg-gray-50 transition-colors text-sm">
-                      <td className="px-6 py-4 text-gray-500 whitespace-nowrap">
-                        {log.createdAt ? new Date(log.createdAt).toLocaleString() : '—'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900">{log.userName || 'System'}</div>
-                        <div className="text-xs text-gray-500">{log.userEmail || ''}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                          log.action.includes('DELETE') ? 'bg-red-100 text-red-700' :
-                          log.action.includes('UPDATE') ? 'bg-amber-100 text-amber-700' :
-                          'bg-blue-100 text-blue-700'
-                        }`}>
-                          {log.action}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-gray-600 max-w-xs truncate" title={log.details}>
-                        {log.details}
-                      </td>
+                  logs.map((log, idx) => (
+                    <tr key={idx}>
+                      <td className="text-xs sm:text-sm">{new Date(log.timestamp).toLocaleString()}</td>
+                      <td className="text-xs sm:text-sm">{log.admin || '—'}</td>
+                      <td className="text-xs sm:text-sm font-medium text-navy-700">{log.action}</td>
+                      <td className="text-xs sm:text-sm text-navy-500">{log.details}</td>
                     </tr>
                   ))
                 )}
@@ -130,73 +117,27 @@ export default function AdminSettings() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <Shield className="h-5 w-5 text-indigo-600" />
-              Security Policies
-            </h3>
-            <div className="space-y-4">
-              <ToggleSetting label="Enforce 2FA for Admins" description="Require two-factor authentication for all administrative accounts." defaultChecked={true} />
-              <ToggleSetting label="IP Whitelisting" description="Restrict admin panel access to specific IP ranges." defaultChecked={false} />
-              <ToggleSetting label="Session Timeout" description="Automatically log out inactive users after 30 minutes." defaultChecked={true} />
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <Database className="h-5 w-5 text-indigo-600" />
-              Data Management
-            </h3>
-            <div className="space-y-4">
-              <ToggleSetting label="Auto-Archive History" description="Move scan history older than 90 days to cold storage." defaultChecked={true} />
-              <ToggleSetting label="Detailed Logging" description="Capture full request/response payloads in system logs." defaultChecked={false} />
-              <div className="pt-4">
-                <button 
-                  onClick={() => setShowSaveConfirm(true)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                >
-                  <Save className="h-4 w-4" />
-                  Save Configuration
-                </button>
+        <div className="card p-6 sm:p-8">
+          <h3 className="text-lg sm:text-xl font-bold text-navy-900 mb-6">System Configuration</h3>
+          <div className="space-y-6">
+            <div>
+              <label className="label">System Status</label>
+              <div className="p-3 sm:p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-700 text-xs sm:text-sm font-medium">
+                ✓ All systems operational
               </div>
             </div>
+            <div className="flex items-center justify-between">
+              <span className="text-navy-600 font-medium text-sm sm:text-base">Maintenance Mode</span>
+              <button className="w-12 h-6 rounded-full bg-navy-200 transition-colors relative">
+                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full" />
+              </button>
+            </div>
+            <button onClick={handleSaveConfig} className="btn-primary w-full mt-8">
+              Save Changes
+            </button>
           </div>
         </div>
       )}
-
-      <ConfirmModal 
-        isOpen={showSaveConfirm}
-        onClose={() => setShowSaveConfirm(false)}
-        onConfirm={handleSaveConfig}
-        title="Save Configuration"
-        message="Are you sure you want to apply these system configuration changes? This may affect system behavior immediately."
-        confirmText="Save Changes"
-      />
-    </div>
-  )
-}
-
-function ToggleSetting({ label, description, defaultChecked }) {
-  const [checked, setChecked] = useState(defaultChecked)
-  return (
-    <div className="flex items-start justify-between gap-4">
-      <div className="flex-1">
-        <div className="text-sm font-medium text-gray-900">{label}</div>
-        <div className="text-xs text-gray-500">{description}</div>
-      </div>
-      <button
-        onClick={() => setChecked(!checked)}
-        className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-          checked ? 'bg-indigo-600' : 'bg-gray-200'
-        }`}
-      >
-        <span
-          className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-            checked ? 'translate-x-5' : 'translate-x-0'
-          }`}
-        />
-      </button>
     </div>
   )
 }

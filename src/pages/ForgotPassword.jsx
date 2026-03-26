@@ -86,13 +86,14 @@ export default function ForgotPassword() {
                 </div>
                 
                 <div className="pt-2 flex justify-center">
-                  <button type="submit" disabled={loading} className="btn-primary w-[60%] py-3.5 text-base font-bold shadow-glow-sm hover:shadow-glow transition-all">
+                  <button type="submit" disabled={loading} className="btn-primary w-full sm:w-[60%] py-2.5 sm:py-3.5 text-xs sm:text-base font-bold shadow-glow-sm hover:shadow-glow transition-all whitespace-nowrap">
                     {loading ? (
                       <span className="flex items-center gap-2 justify-center">
-                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Sending...
+                        <span className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span className="hidden sm:inline">Sending...</span>
+                        <span className="sm:hidden">Sending</span>
                       </span>
-                    ) : (<span className="flex items-center gap-2 justify-center">Send Instructions <ArrowRight size={18} /></span>)}
+                    ) : (<span className="flex items-center gap-1 sm:gap-2 justify-center"><span>Send Instructions</span> <ArrowRight size={14} className="sm:size-5" /></span>)}
                   </button>
                 </div>
               </form>

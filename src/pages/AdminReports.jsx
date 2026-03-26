@@ -50,35 +50,24 @@ export default function AdminReports() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">System Reports</h1>
-          <p className="text-gray-500">Comprehensive overview of system activity and security metrics</p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium">
-          <Download className="h-4 w-4" />
-          Export PDF Report
-        </button>
-      </div>
-
-      <div className="flex gap-4 border-b border-gray-200">
+      <div className="flex gap-2 sm:gap-4 border-b border-navy-100 overflow-x-auto">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`pb-4 px-4 text-sm font-medium transition-colors relative ${
-            activeTab === 'overview' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'
+          className={`pb-3 sm:pb-4 px-3 sm:px-4 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap ${
+            activeTab === 'overview' ? 'text-brand-blue' : 'text-navy-500 hover:text-navy-700'
           }`}
         >
           Overview
-          {activeTab === 'overview' && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}
+          {activeTab === 'overview' && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-blue" />}
         </button>
         <button
-          onClick={() => setActiveTab('activity')}
-          className={`pb-4 px-4 text-sm font-medium transition-colors relative ${
-            activeTab === 'activity' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'
+          onClick={() => setActiveTab('detections')}
+          className={`pb-3 sm:pb-4 px-3 sm:px-4 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap ${
+            activeTab === 'detections' ? 'text-brand-blue' : 'text-navy-500 hover:text-navy-700'
           }`}
         >
-          System Activity
-          {activeTab === 'activity' && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}
+          Recent Detections
+          {activeTab === 'detections' && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-blue" />}
         </button>
       </div>
 
