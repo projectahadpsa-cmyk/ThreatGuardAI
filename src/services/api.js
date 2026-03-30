@@ -452,6 +452,89 @@ export async function getHistory({ limit: l = 50, offset = 0, verdict = 'all', s
   }
 }
 
+export async function updateProfile(fields, token) {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      const err = new Error('Please sign in to perform this action.');
+      err.title = 'Authentication Required';
+      throw err;
+    }
+    
+    if (fields.fullName) {
+      await updateFbProfile(user, { displayName: fields.fullName });
+      await updateDoc(doc(db, 'users', user.uid), { fullName: fields.fullName });
+    }
+    
+    return { success: true };
+  } catch (error) {
+    if (error.title) throw error;
+    const errorMsg = getErrorMessage(error);
+    const err = new Error(errorMsg.message);
+    err.title = errorMsg.title;
+    throw err;
+  }
+}
+
+export async function changePassword({ currentPassword, newPassword }, token) {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      const err = new Error('Please sign in to perform this action.');
+      err.title = 'Authentication Required';
+      throw err;
+    }
+    
+    try {
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+    } catch (err) {
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        const error = new Error('Your current password is incorrect. Please try again.');
+        error.title = 'Invalid Password';
+        throw error;
+      }
+      throw err;
+    }
+    
+    await updateFbPassword(user, newPassword);
+    
+    return { success: true };
+  } catch (error) {
+    if (error.title) throw error;
+    const errorMsg = getErrorMessage(error);
+    const err = new Error(errorMsg.message);
+    err.title = errorMsg.title;
+    throw err;
+  }
+}
+
+export async function clearHistory(token) {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      const err = new Error('Please sign in to perform this action.');
+      err.title = 'Authentication Required';
+      throw err;
+    }
+    
+    const q = query(collection(db, 'detections'), where('userId', '==', user.uid));
+    const snapshot = await getDocs(q);
+    
+    const batch = writeBatch(db);
+    snapshot.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    
+    return { success: true };
+  } catch (error) {
+    if (error.title) throw error;
+    const errorMsg = getErrorMessage(error);
+    const err = new Error(errorMsg.message);
+    err.title = errorMsg.title;
+    throw err;
+  }
+}
+
 export async function getApiKeys(token) {
   try {
     const user = auth.currentUser;
