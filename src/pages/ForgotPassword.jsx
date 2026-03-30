@@ -23,10 +23,10 @@ export default function ForgotPassword() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500))
       setSubmitted(true)
+      setLoading(false)
       toast.success('Password reset instructions sent to your email.', 'Check your inbox')
     } catch (err) {
       setError('Failed to send reset email. Please try again.')
-    } finally {
       setLoading(false)
     }
   }

@@ -28,14 +28,17 @@ export default function Login() {
     try {
       const u = await login(form.email, form.password)
       toast.success(`Welcome back, ${u.fullName?.split(' ')[0]}! 👋`, 'Signed In')
-      navigate('/app/dashboard')
+      // Wait to show success state, then clear loading and navigate
+      setTimeout(() => {
+        setLoading(false)
+        navigate('/app/dashboard')
+      }, 500)
     } catch (err) {
+      setLoading(false)
       const msg = err.message || 'Invalid email or password.'
       const title = err.title || 'Sign In Failed'
       setError(msg)
       toast.error(msg, title)
-    } finally {
-      setLoading(false)
     }
   }
 
