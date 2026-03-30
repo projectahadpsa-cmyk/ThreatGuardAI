@@ -70,11 +70,7 @@ export default function Register() {
     try {
       await register({ fullName: form.fullName, email: form.email, password: form.password })
       toast.success('Your account has been created successfully!', 'Welcome to ThreatGuardAI 🎉')
-      // Wait to show success state, then clear loading and navigate
-      setTimeout(() => {
-        setLoading(false)
-        navigate('/app/dashboard')
-      }, 500)
+      navigate('/app/dashboard')
     } catch (err) {
       setLoading(false)
       const msg = err.message || 'Registration failed. Please try again.'
