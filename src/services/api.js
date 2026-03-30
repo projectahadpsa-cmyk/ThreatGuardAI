@@ -280,17 +280,55 @@ export async function getAdminStats(token) {
   const user = auth.currentUser;
   if (!user) throw new Error('Not authenticated');
   
-  // In a real app, we'd check the role here
-  const usersCount = await getCountFromServer(collection(db, 'users'));
-  const scansCount = await getCountFromServer(collection(db, 'detections'));
-  const attacksQuery = query(collection(db, 'detections'), where('verdict', '==', 'ATTACK'));
-  const attacksCount = await getCountFromServer(attacksQuery);
-  
-  return {
-    totalUsers: usersCount.data().count,
-    totalScans: scansCount.data().count,
-    totalAttacks: attacksCount.data().count
-  };
+  try {
+    // Get counts
+    const usersCount = await getCountFromServer(collection(db, 'users'));
+    const scansCount = await getCountFromServer(collection(db, 'detections'));
+    const attacksQuery = query(collection(db, 'detections'), where('verdict', '==', 'ATTACK'));
+    const attacksCount = await getCountFromServer(attacksQuery);
+    
+    // Get users with role distribution
+    const usersSnapshot = await getDocs(collection(db, 'users'));
+    const roleMap = {};
+    const userActivityMap = {};
+    
+    usersSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      const role = data.role || 'user';
+      roleMap[role] = (roleMap[role] || 0) + 1;
+      
+      // Track user registrations by day
+      if (data.createdAt) {
+        const createdDate = data.createdAt.toDate ? data.createdAt.toDate().toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+        userActivityMap[createdDate] = (userActivityMap[createdDate] || 0) + 1;
+      }
+    });
+    
+    // Convert to arrays sorted
+    const roles = Object.entries(roleMap).map(([role, count]) => ({ role, count }));
+    const user_activity = Object.entries(userActivityMap)
+      .map(([day, count]) => ({ day, count }))
+      .sort((a, b) => b.day.localeCompare(a.day))
+      .slice(0, 7)
+      .reverse();
+    
+    return {
+      total_users: usersCount.data().count,
+      total_scans: scansCount.data().count,
+      total_attacks: attacksCount.data().count,
+      roles,
+      user_activity
+    };
+  } catch (err) {
+    console.error('Error fetching admin stats:', err);
+    return {
+      total_users: 0,
+      total_scans: 0,
+      total_attacks: 0,
+      roles: [],
+      user_activity: []
+    };
+  }
 }
 
 export async function getAdminReportsSummary(token) {
