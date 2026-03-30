@@ -28,32 +28,45 @@ export default function Profile() {
 
   const saveProfile = async () => {
     if (!profileForm.fullName || !profileForm.email) {
-      toast.warning('Name and email are required.')
+      toast.warning('Your name and email address are required.')
       return
     }
     setSaving(true)
     try {
       await updateProfile({ fullName: profileForm.fullName, email: profileForm.email }, token)
       await refreshUser()
-      toast.success('Your profile information has been updated.', 'Profile Updated')
+      toast.success('Your profile information has been updated successfully.', 'Profile Updated ✓')
     } catch (e) {
-      toast.error(e.message || 'Failed to update profile.', 'Update Failed')
+      const msg = e.message || 'Failed to update your profile.'
+      const title = e.title || 'Update Failed'
+      toast.error(msg, title)
     } finally {
       setSaving(false)
     }
   }
 
   const handleChangePassword = async () => {
-    if (!passForm.current || !passForm.next) { toast.warning('Fill in all password fields.'); return }
-    if (passForm.next !== passForm.confirm)   { toast.warning('New passwords do not match.'); return }
-    if (passForm.next.length < 6)             { toast.warning('Password must be at least 6 characters.'); return }
+    if (!passForm.current || !passForm.next) { 
+      toast.warning('Please fill in all password fields.'); 
+      return 
+    }
+    if (passForm.next !== passForm.confirm)   { 
+      toast.warning('The new passwords do not match.'); 
+      return 
+    }
+    if (passForm.next.length < 6)             { 
+      toast.warning('Password must be at least 6 characters long.'); 
+      return 
+    }
     setSaving(true)
     try {
       await changePassword({ currentPassword: passForm.current, newPassword: passForm.next }, token)
       setPassForm({ current: '', next: '', confirm: '' })
-      toast.success('Your password has been changed successfully.', 'Password Updated')
+      toast.success('Your password has been changed successfully.', 'Password Updated ✓')
     } catch (e) {
-      toast.error(e.message || 'Failed to change password.', 'Update Failed')
+      const msg = e.message || 'Failed to change your password.'
+      const title = e.title || 'Update Failed'
+      toast.error(msg, title)
     } finally {
       setSaving(false)
     }
@@ -61,16 +74,18 @@ export default function Profile() {
 
   const handleLogout = async () => {
     await logout()
-    toast.info('You have been signed out.')
+    toast.info('You have been signed out successfully.')
     navigate('/')
   }
 
   const handleClearHistory = async () => {
     try {
       await clearHistory(token)
-      toast.success('All scan history has been cleared.', 'History Cleared')
-    } catch {
-      toast.error('Failed to clear history.', 'Error')
+      toast.success('All your scan history has been cleared successfully.', 'History Cleared ✓')
+    } catch (e) {
+      const msg = e.message || 'Failed to clear your scan history.'
+      const title = e.title || 'Error'
+      toast.error(msg, title)
     }
   }
 

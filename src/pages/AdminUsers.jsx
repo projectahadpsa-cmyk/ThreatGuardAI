@@ -25,7 +25,9 @@ export default function AdminUsers() {
       const data = await getAdminUsers(search, token)
       setUsers(data)
     } catch (err) {
-      toast.error('Failed to load users')
+      const msg = err.message || 'Failed to load users. Please try again.'
+      const title = err.title || 'Load Error'
+      toast.error(msg, title)
     } finally {
       setLoading(false)
     }
@@ -34,10 +36,12 @@ export default function AdminUsers() {
   const handleRoleChange = async (userId, newRole) => {
     try {
       await updateAdminUser(userId, { role: newRole }, token)
-      toast.success('User role updated')
+      toast.success('User role has been updated successfully.', 'Role Updated ✓')
       fetchUsers()
     } catch (err) {
-      toast.error('Failed to update role')
+      const msg = err.message || 'Failed to update the user role.'
+      const title = err.title || 'Update Failed'
+      toast.error(msg, title)
     }
   }
 
@@ -45,10 +49,12 @@ export default function AdminUsers() {
     const userId = confirmDelete.userId
     try {
       await deleteAdminUser(userId, token)
-      toast.success('User deleted successfully')
+      toast.success('User has been deleted successfully.', 'User Deleted ✓')
       fetchUsers()
     } catch (err) {
-      toast.error(err.message)
+      const msg = err.message || 'Failed to delete the user.'
+      const title = err.title || 'Deletion Failed'
+      toast.error(msg, title)
     }
   }
 

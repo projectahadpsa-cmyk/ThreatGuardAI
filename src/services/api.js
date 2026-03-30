@@ -1,6 +1,7 @@
 /**
  * ThreatGuardAI — Firebase Service
  * Replaces the Express backend with direct Firestore and Firebase Auth calls.
+ * Includes comprehensive error handling with user-friendly messages.
  */
 import { 
   collection, 
@@ -29,60 +30,85 @@ import {
   EmailAuthProvider
 } from 'firebase/auth';
 import { db, auth } from '../firebase';
+import { getErrorMessage, successMessages } from './errorMessages';
 import { runThreatGuardInference } from './inference';
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 export async function apiRegister({ fullName, email, password }) {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-  
-  await updateFbProfile(user, { displayName: fullName });
-  
-  // Create user profile in Firestore
-  const userProfile = {
-    fullName,
-    email,
-    role: 'user', // Default role
-    createdAt: serverTimestamp(),
-  };
-  
-  await setDoc(doc(db, 'users', user.uid), userProfile);
-  
-  return { user: { id: user.uid, fullName, email, role: 'user' }, token: await user.getIdToken() };
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    await updateFbProfile(user, { displayName: fullName });
+    
+    // Create user profile in Firestore
+    const userProfile = {
+      fullName,
+      email,
+      role: 'user', // Default role
+      createdAt: serverTimestamp(),
+    };
+    
+    await setDoc(doc(db, 'users', user.uid), userProfile);
+    
+    return { user: { id: user.uid, fullName, email, role: 'user' }, token: await user.getIdToken() };
+  } catch (error) {
+    const errorMsg = getErrorMessage(error);
+    const err = new Error(errorMsg.message);
+    err.title = errorMsg.title;
+    throw err;
+  }
 }
 
-// I'll fix the setDoc import in the next step. For now, let's continue with the logic.
-
 export async function apiLogin(email, password) {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-  const token = await user.getIdToken();
-  
-  // Fetch profile from Firestore with fallback
-  let profile = { fullName: user.displayName, email: user.email, role: 'user' };
   try {
-    const userDoc = await getDoc(doc(db, 'users', user.uid));
-    if (userDoc.exists()) {
-      profile = userDoc.data();
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    const token = await user.getIdToken();
+    
+    // Fetch profile from Firestore with fallback
+    let profile = { fullName: user.displayName, email: user.email, role: 'user' };
+    try {
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        profile = userDoc.data();
+      }
+    } catch (err) {
+      console.warn('⚠️ Firestore offline, using basic profile:', err.message);
+      // Continue with basic profile if Firestore is unavailable
     }
-  } catch (err) {
-    console.warn('⚠️ Firestore offline, using basic profile:', err.message);
-    // Continue with basic profile if Firestore is unavailable
+    
+    return { user: { id: user.uid, ...profile }, token };
+  } catch (error) {
+    const errorMsg = getErrorMessage(error);
+    const err = new Error(errorMsg.message);
+    err.title = errorMsg.title;
+    throw err;
   }
-  
-  return { user: { id: user.uid, ...profile }, token };
 }
 
 export async function apiGetMe(token) {
-  // In Firebase, we usually use onAuthStateChanged, but for compatibility:
-  const user = auth.currentUser;
-  if (!user) throw new Error('Not authenticated');
-  
-  const userDoc = await getDoc(doc(db, 'users', user.uid));
-  const profile = userDoc.exists() ? userDoc.data() : { fullName: user.displayName, email: user.email, role: 'user' };
-  
-  return { id: user.uid, ...profile };
+  try {
+    // In Firebase, we usually use onAuthStateChanged, but for compatibility:
+    const user = auth.currentUser;
+    if (!user) {
+      const err = new Error('Please sign in to continue.');
+      err.title = 'Authentication Required';
+      throw err;
+    }
+    
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    const profile = userDoc.exists() ? userDoc.data() : { fullName: user.displayName, email: user.email, role: 'user' };
+    
+    return { id: user.uid, ...profile };
+  } catch (error) {
+    if (error.title) throw error; // Already a formatted error
+    const errorMsg = getErrorMessage(error);
+    const err = new Error(errorMsg.message);
+    err.title = errorMsg.title;
+    throw err;
+  }
 }
 
 // ── Seeding ──────────────────────────────────────────────────────────────────
@@ -133,63 +159,87 @@ export async function seedDefaultUsers() {
 // ── Detection ─────────────────────────────────────────────────────────────────
 
 export async function detectSingle(features, token) {
-  const user = auth.currentUser;
-  if (!user) throw new Error('Not authenticated');
-  
-  const result = await runThreatGuardInference(features);
-  
-  const detectionData = {
-    userId: user.uid,
-    inputMode: 'manual',
-    verdict: result.verdict,
-    confidence: result.confidence,
-    features,
-    topFeaturesJson: JSON.stringify(result.topFeatures),
-    engine: result.engine,
-    createdAt: serverTimestamp()
-  };
-  
-  const docRef = await addDoc(collection(db, 'detections'), detectionData);
-  const saved = { id: docRef.id, ...detectionData, timestamp: new Date().toISOString() };
-  
-  return { ...result, detection: saved };
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      const err = new Error('Please sign in to run a detection scan.');
+      err.title = 'Authentication Required';
+      throw err;
+    }
+    
+    const result = await runThreatGuardInference(features);
+    
+    const detectionData = {
+      userId: user.uid,
+      inputMode: 'manual',
+      verdict: result.verdict,
+      confidence: result.confidence,
+      features,
+      topFeaturesJson: JSON.stringify(result.topFeatures),
+      engine: result.engine,
+      createdAt: serverTimestamp()
+    };
+    
+    const docRef = await addDoc(collection(db, 'detections'), detectionData);
+    const saved = { id: docRef.id, ...detectionData, timestamp: new Date().toISOString() };
+    
+    return { ...result, detection: saved };
+  } catch (error) {
+    if (error.title) throw error;
+    const errorMsg = getErrorMessage(error);
+    const err = new Error(errorMsg.message);
+    err.title = errorMsg.title;
+    throw err;
+  }
 }
 
 export async function detectBatch(records, filename, token) {
-  const user = auth.currentUser;
-  if (!user) throw new Error('Not authenticated');
-  
-  const results = await Promise.all(records.map(r => runThreatGuardInference(r)));
-  const attackCount = results.filter(r => r.verdict === 'ATTACK').length;
-  const avgConf = results.reduce((a, b) => a + b.confidence, 0) / results.length;
-  
-  const summary = {
-    total: records.length,
-    attack_count: attackCount,
-    normal_count: records.length - attackCount,
-    summary_verdict: attackCount > 0 ? 'ATTACK' : 'NORMAL',
-    confidence: avgConf,
-    results
-  };
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      const err = new Error('Please sign in to run a detection scan.');
+      err.title = 'Authentication Required';
+      throw err;
+    }
+    
+    const results = await Promise.all(records.map(r => runThreatGuardInference(r)));
+    const attackCount = results.filter(r => r.verdict === 'ATTACK').length;
+    const avgConf = results.reduce((a, b) => a + b.confidence, 0) / results.length;
+    
+    const summary = {
+      total: records.length,
+      attack_count: attackCount,
+      normal_count: records.length - attackCount,
+      summary_verdict: attackCount > 0 ? 'ATTACK' : 'NORMAL',
+      confidence: avgConf,
+      results
+    };
 
-  const detectionData = {
-    userId: user.uid,
-    inputMode: 'csv',
-    verdict: summary.summary_verdict,
-    confidence: summary.confidence,
-    filename,
-    totalRecords: summary.total,
-    attackCount: summary.attack_count,
-    normalCount: summary.normal_count,
-    topFeaturesJson: JSON.stringify(results[0]?.topFeatures || []),
-    engine: results[0]?.engine || 'Heuristic',
-    createdAt: serverTimestamp()
-  };
-  
-  const docRef = await addDoc(collection(db, 'detections'), detectionData);
-  const saved = { id: docRef.id, ...detectionData, timestamp: new Date().toISOString() };
-  
-  return { ...summary, detection: saved };
+    const detectionData = {
+      userId: user.uid,
+      inputMode: 'csv',
+      verdict: summary.summary_verdict,
+      confidence: summary.confidence,
+      filename,
+      totalRecords: summary.total,
+      attackCount: summary.attack_count,
+      normalCount: summary.normal_count,
+      topFeaturesJson: JSON.stringify(results[0]?.topFeatures || []),
+      engine: results[0]?.engine || 'Heuristic',
+      createdAt: serverTimestamp()
+    };
+    
+    const docRef = await addDoc(collection(db, 'detections'), detectionData);
+    const saved = { id: docRef.id, ...detectionData, timestamp: new Date().toISOString() };
+    
+    return { ...summary, detection: saved };
+  } catch (error) {
+    if (error.title) throw error;
+    const errorMsg = getErrorMessage(error);
+    const err = new Error(errorMsg.message);
+    err.title = errorMsg.title;
+    throw err;
+  }
 }
 
 export async function getStats(token) {
@@ -316,106 +366,150 @@ export async function getAdminLogs(l = 100, token) {
 }
 
 export async function getAdminUsers(search, token) {
-  const snapshot = await getDocs(collection(db, 'users'));
-  let users = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-  
-  if (search) {
-    const s = search.toLowerCase();
-    users = users.filter(u => u.fullName.toLowerCase().includes(s) || u.email.toLowerCase().includes(s));
+  try {
+    const snapshot = await getDocs(collection(db, 'users'));
+    let users = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    
+    if (search) {
+      const s = search.toLowerCase();
+      users = users.filter(u => u.fullName.toLowerCase().includes(s) || u.email.toLowerCase().includes(s));
+    }
+    
+    return users;
+  } catch (error) {
+    if (error.title) throw error;
+    const errorMsg = getErrorMessage(error);
+    const err = new Error(errorMsg.message);
+    err.title = errorMsg.title;
+    throw err;
   }
-  
-  return users;
 }
 
 export async function updateAdminUser(id, data, token) {
-  await updateDoc(doc(db, 'users', id), data);
-  return { success: true };
+  try {
+    await updateDoc(doc(db, 'users', id), data);
+    return { success: true };
+  } catch (error) {
+    if (error.title) throw error;
+    if (error.code === 'not-found') {
+      const err = new Error('The user could not be found. They may have been deleted.');
+      err.title = 'User Not Found';
+      throw err;
+    }
+    const errorMsg = getErrorMessage(error);
+    const err = new Error(errorMsg.message);
+    err.title = errorMsg.title;
+    throw err;
+  }
 }
 
 export async function deleteAdminUser(id, token) {
-  await deleteDoc(doc(db, 'users', id));
-  return { success: true };
+  try {
+    // Delete user from Firestore
+    await deleteDoc(doc(db, 'users', id));
+    
+    // Also delete their detections
+    const detectionsQuery = query(collection(db, 'detections'), where('userId', '==', id));
+    const snapshot = await getDocs(detectionsQuery);
+    const batch = writeBatch(db);
+    snapshot.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    
+    return { success: true };
+  } catch (error) {
+    if (error.title) throw error;
+    if (error.code === 'not-found') {
+      const err = new Error('The user could not be found. They may have already been deleted.');
+      err.title = 'User Not Found';
+      throw err;
+    }
+    const errorMsg = getErrorMessage(error);
+    const err = new Error(errorMsg.message);
+    err.title = errorMsg.title;
+    throw err;
+  }
 }
 
 export async function getHistory({ limit: l = 50, offset = 0, verdict = 'all', search = '' } = {}, token) {
-  const user = auth.currentUser;
-  if (!user) return [];
-  
-  let q = query(collection(db, 'detections'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'), limit(l));
-  
-  if (verdict !== 'all') {
-    q = query(collection(db, 'detections'), where('userId', '==', user.uid), where('verdict', '==', verdict.toUpperCase()), orderBy('createdAt', 'desc'), limit(l));
+  try {
+    const user = auth.currentUser;
+    if (!user) return [];
+    
+    let q = query(collection(db, 'detections'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'), limit(l));
+    
+    if (verdict !== 'all') {
+      q = query(collection(db, 'detections'), where('userId', '==', user.uid), where('verdict', '==', verdict.toUpperCase()), orderBy('createdAt', 'desc'), limit(l));
+    }
+    
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(d => ({ id: d.id, ...d.data(), createdAt: d.data().createdAt?.toDate?.()?.toISOString() }));
+  } catch (error) {
+    if (error.title) throw error;
+    const errorMsg = getErrorMessage(error);
+    const err = new Error(errorMsg.message);
+    err.title = errorMsg.title;
+    throw err;
   }
-  
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(d => ({ id: d.id, ...d.data(), createdAt: d.data().createdAt?.toDate?.()?.toISOString() }));
-}
-
-export async function updateProfile(fields, token) {
-  const user = auth.currentUser;
-  if (!user) throw new Error('Not authenticated');
-  
-  if (fields.fullName) {
-    await updateFbProfile(user, { displayName: fields.fullName });
-    await updateDoc(doc(db, 'users', user.uid), { fullName: fields.fullName });
-  }
-  
-  return { success: true };
-}
-
-export async function changePassword({ currentPassword, newPassword }, token) {
-  const user = auth.currentUser;
-  if (!user) throw new Error('Not authenticated');
-  
-  const credential = EmailAuthProvider.credential(user.email, currentPassword);
-  await reauthenticateWithCredential(user, credential);
-  await updateFbPassword(user, newPassword);
-  
-  return { success: true };
-}
-
-export async function clearHistory(token) {
-  const user = auth.currentUser;
-  if (!user) throw new Error('Not authenticated');
-  
-  const q = query(collection(db, 'detections'), where('userId', '==', user.uid));
-  const snapshot = await getDocs(q);
-  
-  const batch = writeBatch(db);
-  snapshot.docs.forEach(d => batch.delete(d.ref));
-  await batch.commit();
-  
-  return { success: true };
 }
 
 export async function getApiKeys(token) {
-  const user = auth.currentUser;
-  if (!user) return [];
-  
-  const q = query(collection(db, 'apiKeys'), where('userId', '==', user.uid));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  try {
+    const user = auth.currentUser;
+    if (!user) return [];
+    
+    const q = query(collection(db, 'apiKeys'), where('userId', '==', user.uid));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (error) {
+    console.error('Error fetching API keys:', error);
+    return [];
+  }
 }
 
 export async function createApiKey(keyName, token) {
-  const user = auth.currentUser;
-  if (!user) throw new Error('Not authenticated');
-  
-  const apiKey = `tg_${Math.random().toString(36).substr(2, 16)}`;
-  const data = {
-    userId: user.uid,
-    keyName,
-    apiKey,
-    createdAt: serverTimestamp()
-  };
-  
-  const docRef = await addDoc(collection(db, 'apiKeys'), data);
-  return { id: docRef.id, ...data };
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      const err = new Error('Please sign in to create an API key.');
+      err.title = 'Authentication Required';
+      throw err;
+    }
+    
+    const apiKey = `tg_${Math.random().toString(36).substr(2, 16)}`;
+    const data = {
+      userId: user.uid,
+      keyName,
+      apiKey,
+      createdAt: serverTimestamp()
+    };
+    
+    const docRef = await addDoc(collection(db, 'apiKeys'), data);
+    return { id: docRef.id, ...data };
+  } catch (error) {
+    if (error.title) throw error;
+    const errorMsg = getErrorMessage(error);
+    const err = new Error(errorMsg.message);
+    err.title = errorMsg.title;
+    throw err;
+  }
 }
 
 export async function deleteApiKey(id, token) {
-  await deleteDoc(doc(db, 'apiKeys', id));
-  return { success: true };
+  try {
+    await deleteDoc(doc(db, 'apiKeys', id));
+    return { success: true };
+  } catch (error) {
+    if (error.title) throw error;
+    if (error.code === 'not-found') {
+      const err = new Error('The API key could not be found. It may have already been deleted.');
+      err.title = 'Not Found';
+      throw err;
+    }
+    const errorMsg = getErrorMessage(error);
+    const err = new Error(errorMsg.message);
+    err.title = errorMsg.title;
+    throw err;
+  }
 }
 
 export async function healthCheck() {

@@ -30,7 +30,9 @@ export default function AdminReports() {
       const data = await getAdminReportsSummary(token)
       setReportData(data)
     } catch (err) {
-      toast.error('Failed to load report data')
+      const msg = err.message || 'Failed to load report data. Please try again.'
+      const title = err.title || 'Load Error'
+      toast.error(msg, title)
     } finally {
       setLoading(false)
     }
@@ -42,7 +44,9 @@ export default function AdminReports() {
       const data = await getAdminDetections({ limit: 50 }, token)
       setDetections(data.rows)
     } catch (err) {
-      toast.error('Failed to load detections')
+      const msg = err.message || 'Failed to load detection records. Please try again.'
+      const title = err.title || 'Load Error'
+      toast.error(msg, title)
     } finally {
       setLoading(false)
     }

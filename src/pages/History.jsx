@@ -40,7 +40,9 @@ export default function History() {
         setScans(data.rows || [])
         setTotal(data.total || 0)
       } catch (e) {
-        toast.error('Failed to load scan history.')
+        const msg = e.message || 'Failed to load your scan history.'
+        const title = e.title || 'Load Error'
+        toast.error(msg, title)
       } finally {
         setLoading(false)
       }
@@ -53,28 +55,30 @@ export default function History() {
       await clearHistory(token)
       setScans([])
       setTotal(0)
-      toast.success('Scan history cleared successfully.')
-    } catch {
-      toast.error('Failed to clear history.')
+      toast.success('All your scan history has been cleared successfully.', 'History Cleared ✓')
+    } catch (e) {
+      const msg = e.message || 'Failed to clear your scan history.'
+      const title = e.title || 'Deletion Failed'
+      toast.error(msg, title)
     }
   }
 
   const handleExportCSV = () => {
     if (scans.length === 0) {
-      toast.error('No data to export.')
+      toast.warning('No scan data available to export.')
       return
     }
     exportToCSV(scans)
-    toast.success('CSV export started.')
+    toast.success('CSV export has been generated successfully.', 'Export Complete ✓')
   }
 
   const handleExportPDF = () => {
     if (scans.length === 0) {
-      toast.error('No data to export.')
+      toast.warning('No scan data available to export.')
       return
     }
     exportToPDF(scans, 'Security Audit History Report')
-    toast.success('PDF report generation started.')
+    toast.success('PDF report generation has started successfully.', 'Export Complete ✓')
   }
 
   const handleView = (scan) => {

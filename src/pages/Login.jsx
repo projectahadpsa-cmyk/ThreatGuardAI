@@ -31,8 +31,9 @@ export default function Login() {
       navigate('/app/dashboard')
     } catch (err) {
       const msg = err.message || 'Invalid email or password.'
+      const title = err.title || 'Sign In Failed'
       setError(msg)
-      toast.error(msg, 'Sign In Failed')
+      toast.error(msg, title)
     } finally {
       setLoading(false)
     }

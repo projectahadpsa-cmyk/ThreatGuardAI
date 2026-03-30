@@ -137,11 +137,11 @@ export default function Detection() {
       complete: ({ data }) => {
         setCsvRecords(data)
         setError('')
-        toast.success(`${data.length.toLocaleString()} records loaded from "${file.name}"`, 'CSV Loaded')
+        toast.success(`Successfully loaded ${data.length.toLocaleString()} records from "${file.name}".`, 'CSV Loaded ✓')
       },
       error: () => {
-        setError('Failed to parse CSV file.')
-        toast.error('Failed to parse CSV file. Please check the format.', 'CSV Error')
+        setError('The CSV file format is invalid.')
+        toast.error('The CSV file format is invalid. Please check the format and try again.', 'CSV Parse Error')
       }
     })
   }
@@ -176,7 +176,10 @@ export default function Detection() {
           try {
             features = JSON.parse(jsonInput)
           } catch {
-            throw new Error('Invalid JSON format.')
+            setError('Invalid JSON format.')
+            toast.error('The JSON format is invalid. Please check your input.', 'Invalid JSON')
+            setAnalyzing(false)
+            return
           }
         } else {
           features = Object.fromEntries(
@@ -189,14 +192,20 @@ export default function Detection() {
           apiResult   = resp
           detectionRow = resp.detection
         } catch (err) {
-          toast.error('Detection engine unavailable. Please check system status.')
+          const msg = err.message || 'The detection engine is temporarily unavailable.'
+          const title = err.title || 'Detection Failed'
+          setError(msg)
+          toast.error(msg, title)
           setAnalyzing(false)
           return
         }
       } else {
         if (!csvRecords.length) {
-          toast.warning('No records found in CSV. Please upload a valid file.')
-          setAnalyzing(false); return
+          const msg = 'No records found in the CSV file. Please upload a valid CSV with data.'
+          setError(msg)
+          toast.warning(msg)
+          setAnalyzing(false)
+          return
         }
         const records = csvRecords.map(r =>
           Object.fromEntries(Object.entries(r).map(([k, v]) => [k, parseFloat(v) || 0]))
@@ -206,7 +215,10 @@ export default function Detection() {
           apiResult    = resp
           detectionRow = resp.detection
         } catch (err) {
-          toast.error('Batch processing failed. Please check system status.')
+          const msg = err.message || 'Batch processing failed. Please check your data and try again.'
+          const title = err.title || 'Batch Analysis Failed'
+          setError(msg)
+          toast.error(msg, title)
           setAnalyzing(false)
           return
         }
@@ -216,16 +228,16 @@ export default function Detection() {
       if (isAttack) {
         toast.error(
           mode === 'csv'
-            ? `${detectionRow.attackCount} attack(s) detected in ${detectionRow.totalRecords} records.`
-            : `Attack detected with ${Math.round(detectionRow.confidence * 100)}% confidence.`,
-          '⚠ Attack Detected'
+            ? `⚠️ Security Threat Detected: ${detectionRow.attackCount} potential attack(s) identified in ${detectionRow.totalRecords} records.`
+            : `⚠️ Security Threat Detected: Attack identified with ${Math.round(detectionRow.confidence * 100)}% confidence.`,
+          '🚨 Threat Detected'
         )
       } else {
         toast.success(
           mode === 'csv'
-            ? `All ${detectionRow.totalRecords} records appear normal.`
-            : `Traffic classified as normal with ${Math.round(detectionRow.confidence * 100)}% confidence.`,
-          '✓ Analysis Complete'
+            ? `✓ All ${detectionRow.totalRecords} records were analyzed and appear normal.`
+            : `✓ Traffic classified as normal with ${Math.round(detectionRow.confidence * 100)}% confidence.`,
+          'Analysis Complete ✓'
         )
       }
 

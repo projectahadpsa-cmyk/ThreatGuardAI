@@ -53,15 +53,15 @@ export default function Register() {
       setError(m); toast.warning(m); return
     }
     if (form.password !== form.confirm) {
-      const m = 'Passwords do not match.'
+      const m = 'The passwords you entered do not match. Please try again.'
       setError(m); toast.warning(m); return
     }
     if (form.password.length < 6) {
-      const m = 'Password must be at least 6 characters.'
+      const m = 'Password must be at least 6 characters long.'
       setError(m); toast.warning(m); return
     }
     if (!form.terms) {
-      const m = 'You must agree to the terms to continue.'
+      const m = 'You must agree to the terms and conditions to continue.'
       setError(m); toast.warning(m); return
     }
 
@@ -73,8 +73,9 @@ export default function Register() {
       navigate('/app/dashboard')
     } catch (err) {
       const msg = err.message || 'Registration failed. Please try again.'
+      const title = err.title || 'Registration Failed'
       setError(msg)
-      toast.error(msg, 'Registration Failed')
+      toast.error(msg, title)
     } finally {
       setLoading(false)
     }
