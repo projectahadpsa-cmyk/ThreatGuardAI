@@ -243,49 +243,102 @@ export async function detectBatch(records, filename, token) {
 }
 
 export async function getStats(token) {
-  const user = auth.currentUser;
-  if (!user) return { total: 0, attacks: 0, normals: 0, avgConf: 0, activity: [] };
-  
-  const q = query(collection(db, 'detections'), where('userId', '==', user.uid));
-  const snapshot = await getDocs(q);
-  
-  const detections = snapshot.docs.map(d => d.data());
-  const total = detections.length;
-  const attacks = detections.filter(d => d.verdict === 'ATTACK').length;
-  const normals = total - attacks;
-  const avgConf = total > 0 ? detections.reduce((a, b) => a + b.confidence, 0) / total : 0;
-  
-  // Group by day for activity chart
-  const activityMap = {};
-  detections.forEach(d => {
-    const date = d.createdAt?.toDate ? d.createdAt.toDate().toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-    if (!activityMap[date]) activityMap[date] = { day: date, count: 0, attacks: 0 };
-    activityMap[date].count++;
-    if (d.verdict === 'ATTACK') activityMap[date].attacks++;
-  });
-  
-  const activity = Object.values(activityMap).sort((a, b) => a.day.localeCompare(b.day)).slice(-7);
-  
-  return {
-    total,
-    attacks,
-    normals,
-    avgConf: Math.round(avgConf * 100),
-    activity,
-    recent: snapshot.docs.slice(0, 5).map(d => ({ id: d.id, ...d.data(), createdAt: d.data().createdAt?.toDate?.()?.toISOString() }))
-  };
+  try {
+    const user = auth.currentUser;
+    if (!user) return { total: 0, attacks: 0, normals: 0, avgConf: 0, activity: [], recent: [] };
+    
+    const q = query(collection(db, 'detections'), where('userId', '==', user.uid));
+    const snapshot = await getDocs(q);
+    
+    const detections = snapshot.docs.map(d => d.data());
+    const total = detections.length;
+    const attacks = detections.filter(d => d.verdict === 'ATTACK').length;
+    const normals = total - attacks;
+    const totalConfidence = detections.reduce((sum, d) => sum + (d.confidence || 0), 0);
+    const avgConf = total > 0 ? totalConfidence / total : 0;
+    
+    // Group by day for activity chart
+    const activityMap = {};
+    detections.forEach(d => {
+      try {
+        const date = d.createdAt?.toDate 
+          ? d.createdAt.toDate().toISOString().split('T')[0] 
+          : d.createdAt instanceof Date 
+          ? d.createdAt.toISOString().split('T')[0]
+          : new Date().toISOString().split('T')[0];
+        if (!activityMap[date]) activityMap[date] = { day: date, count: 0, attacks: 0 };
+        activityMap[date].count++;
+        if (d.verdict === 'ATTACK') activityMap[date].attacks++;
+      } catch (err) {
+        console.warn('Date conversion error:', err);
+      }
+    });
+    
+    const activity = Object.values(activityMap)
+      .sort((a, b) => a.day.localeCompare(b.day))
+      .slice(-7);
+    
+    const recent = snapshot.docs.slice(0, 5).map(doc => {
+      try {
+        const data = doc.data();
+        const createdAt = data.createdAt?.toDate 
+          ? data.createdAt.toDate().toISOString()
+          : data.createdAt instanceof Date
+          ? data.createdAt.toISOString()
+          : new Date().toISOString();
+        return { id: doc.id, ...data, createdAt };
+      } catch (err) {
+        console.warn('Recent data transformation error:', err);
+        return { id: doc.id, ...doc.data() };
+      }
+    });
+    
+    return {
+      total,
+      attacks,
+      normals,
+      avgConf: Math.round(avgConf * 100),
+      activity,
+      recent
+    };
+  } catch (err) {
+    console.error('Error fetching stats:', err);
+    return { total: 0, attacks: 0, normals: 0, avgConf: 0, activity: [], recent: [] };
+  }
 }
 
 export async function getAdminStats(token) {
   const user = auth.currentUser;
-  if (!user) throw new Error('Not authenticated');
+  if (!user) return { total_users: 0, total_scans: 0, total_attacks: 0, roles: [], user_activity: [] };
   
   try {
-    // Get counts
-    const usersCount = await getCountFromServer(collection(db, 'users'));
-    const scansCount = await getCountFromServer(collection(db, 'detections'));
-    const attacksQuery = query(collection(db, 'detections'), where('verdict', '==', 'ATTACK'));
-    const attacksCount = await getCountFromServer(attacksQuery);
+    // Get counts with proper error handling
+    let total_users = 0, total_scans = 0, total_attacks = 0;
+    
+    try {
+      const usersCount = await getCountFromServer(collection(db, 'users'));
+      total_users = usersCount.data()?.count || 0;
+    } catch (err) {
+      console.warn('Error counting users:', err);
+      total_users = 0;
+    }
+    
+    try {
+      const scansCount = await getCountFromServer(collection(db, 'detections'));
+      total_scans = scansCount.data()?.count || 0;
+    } catch (err) {
+      console.warn('Error counting scans:', err);
+      total_scans = 0;
+    }
+    
+    try {
+      const attacksQuery = query(collection(db, 'detections'), where('verdict', '==', 'ATTACK'));
+      const attacksCount = await getCountFromServer(attacksQuery);
+      total_attacks = attacksCount.data()?.count || 0;
+    } catch (err) {
+      console.warn('Error counting attacks:', err);
+      total_attacks = 0;
+    }
     
     // Get users with role distribution
     const usersSnapshot = await getDocs(collection(db, 'users'));
@@ -293,14 +346,22 @@ export async function getAdminStats(token) {
     const userActivityMap = {};
     
     usersSnapshot.docs.forEach(doc => {
-      const data = doc.data();
-      const role = data.role || 'user';
-      roleMap[role] = (roleMap[role] || 0) + 1;
-      
-      // Track user registrations by day
-      if (data.createdAt) {
-        const createdDate = data.createdAt.toDate ? data.createdAt.toDate().toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-        userActivityMap[createdDate] = (userActivityMap[createdDate] || 0) + 1;
+      try {
+        const data = doc.data();
+        const role = data.role || 'user';
+        roleMap[role] = (roleMap[role] || 0) + 1;
+        
+        // Track user registrations by day
+        if (data.createdAt) {
+          const createdDate = data.createdAt?.toDate 
+            ? data.createdAt.toDate().toISOString().split('T')[0]
+            : data.createdAt instanceof Date
+            ? data.createdAt.toISOString().split('T')[0]
+            : new Date().toISOString().split('T')[0];
+          userActivityMap[createdDate] = (userActivityMap[createdDate] || 0) + 1;
+        }
+      } catch (err) {
+        console.warn('Error processing user data:', err);
       }
     });
     
@@ -313,11 +374,11 @@ export async function getAdminStats(token) {
       .reverse();
     
     return {
-      total_users: usersCount.data().count,
-      total_scans: scansCount.data().count,
-      total_attacks: attacksCount.data().count,
-      roles,
-      user_activity
+      total_users,
+      total_scans,
+      total_attacks,
+      roles: roles || [],
+      user_activity: user_activity || []
     };
   } catch (err) {
     console.error('Error fetching admin stats:', err);
