@@ -49,12 +49,15 @@ export default function ForgotPassword() {
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-8 bg-[#F8FAFF]">
-        <div className="w-full max-w-[480px] bg-white p-8 sm:p-12 rounded-[2.5rem] border border-navy-100/40 shadow-[0_20px_50px_rgba(13,27,62,0.05)] animate-fade-up">
-          <div className="flex flex-col items-center mb-6 lg:hidden">
-            <img src="/logo.png" alt="ThreatGuardAI" className="w-16 h-16 object-contain" />
+      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 bg-[#F8FAFF]">
+        {/* Logo Container */}
+        <div className="mb-6 sm:mb-8 lg:hidden">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl bg-white border border-navy-100/40 shadow-sm flex items-center justify-center overflow-hidden p-1.5">
+            <img src="/logo.png" alt="ThreatGuardAI" className="w-full h-full object-contain" />
           </div>
-
+        </div>
+        
+        <div className="w-full max-w-[480px] bg-white p-6 sm:p-10 rounded-[2.5rem] border border-navy-100/40 shadow-[0_20px_50px_rgba(13,27,62,0.05)] animate-fade-up">
           {!submitted ? (
             <>
               <div className="mb-10 text-center sm:text-left">
@@ -126,16 +129,7 @@ export default function ForgotPassword() {
           </div>
         </div>
 
-        {/* Bottom Navigation Links */}
-        <div className="w-full max-w-[480px] mt-8 flex items-center justify-center gap-4 flex-wrap">
-          <button onClick={(e) => {e.preventDefault(); window.location.href = '/#features'}} className="text-xs sm:text-sm font-bold text-brand-blue hover:text-blue-700 transition-colors">
-            Features
-          </button>
-          <span className="text-navy-200">•</span>
-          <a href="/#how-it-works" className="text-xs sm:text-sm font-bold text-brand-blue hover:text-blue-700 transition-colors">
-            How It Works
-          </a>
-        </div>
+
       </div>
     </div>
   )

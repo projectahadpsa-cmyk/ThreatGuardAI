@@ -2,7 +2,7 @@
 
 ## Overview
 
-ThreatGuardAI is a professional-grade network security monitoring and intrusion detection platform. It leverages custom-trained Machine Learning models to analyze network traffic patterns and identify potential threats in real-time.
+ThreatGuardAI is a professional-grade network security monitoring and intrusion detection platform. It leverages a custom-trained Random Forest Machine Learning model to analyze network traffic patterns and identify potential threats in real-time.
 
 ## Quick Start
 
@@ -10,11 +10,11 @@ ThreatGuardAI is a professional-grade network security monitoring and intrusion 
 # 1. Install dependencies
 npm install
 
-# 2. Start the integrated Express server & Vite frontend
+# 2. Start the Vite development server
 npm run dev
 ```
 
-The application will be accessible at **http://localhost:3000**
+The application will be accessible at **http://localhost:5173**
 
 ---
 
@@ -22,26 +22,34 @@ The application will be accessible at **http://localhost:3000**
 
 ```
 threatguardai/
-├── ML/                              ← Directory for ONNX models & scalers
+├── ML/                              ← ONNX models & data scalers
 ├── public/
+│   ├── ids_random_forest_model.onnx ← Random Forest model (ONNX format)
+│   ├── data_scaler.onnx             ← Feature scaler (ONNX format)
 │   └── logo.png                     ← System branding
 ├── src/
 │   ├── pages/
 │   │   ├── Landing.jsx              ← Public interface
+│   │   ├── Login.jsx & Register.jsx ← Authentication
 │   │   ├── Dashboard.jsx            ← Security metrics & analytics
 │   │   ├── Detection.jsx            ← Real-time & batch analysis
 │   │   ├── Results.jsx              ← Detailed threat forensics
 │   │   ├── History.jsx              ← Secure audit trail
 │   │   └── Profile.jsx              ← Account & preferences
 │   ├── components/
+│   │   ├── Navbar.jsx               ← Navigation
 │   │   └── soc/                     ← Specialized SOC components
-│   ├── context/                     ← Application state management
+│   ├── context/
+│   │   ├── AuthContext.jsx          ← Authentication state
+│   │   └── ToastContext.jsx         ← Toast notifications
 │   └── services/
-│       ├── db.js                    ← Local persistence layer
-│       └── api.js                   ← Backend communication service
-├── server.ts                        ← Express backend with ONNX inference
+│       ├── api.js                   ← Firebase API calls
+│       ├── inference.js             ← Browser-side ML inference
+│       └── exportService.ts         ← Data export utilities
+├── firebase.json                    ← Firebase configuration
+├── firestore.rules                  ← Firestore security rules
 ├── tailwind.config.js               ← Professional design system
-└── vite.config.js                   ← Build & proxy configuration
+└── vite.config.js                   ← Build configuration
 ```
 
 ---
@@ -51,32 +59,49 @@ threatguardai/
 | Layer       | Technology                           |
 |-------------|--------------------------------------|
 | Frontend    | React 18 + Vite                      |
-| Backend     | Express.js (Node.js)                 |
-| ML Engine   | ONNX Runtime (onnxruntime-node)      |
+| Backend     | Firebase (Firestore, Authentication, Hosting) |
+| ML Engine   | ONNX Runtime (browser-side inference) |
+| ML Model    | Random Forest Classifier             |
 | Styling     | Tailwind CSS                         |
 | Icons       | Lucide React                         |
 | Charts      | Recharts                             |
-| Database    | SQLite (sql.js)                      |
 | Animations  | motion/react                         |
 
 ---
 
 ## Machine Learning Integration
 
-The system utilizes custom ML models for high-precision network intrusion detection:
+The system utilizes a Random Forest model for high-precision network intrusion detection:
 
-1. **Neural Network Engine:** Powered by `onnxruntime-node` for real-time inference on `.onnx` models.
-2. **Models:** Optimized Random Forest and Data Scaler models are loaded from the `/ML/` directory.
-3. **Heuristic Fallback:** A robust rule-based engine ensures continuous protection if neural network models are unavailable.
-4. **Feature Importance:** Provides granular insights into why specific traffic was flagged as a threat.
+1. **Random Forest Model:** Trained on NSL-KDD dataset with 42 network features for accurate attack classification.
+2. **Browser-Side Inference:** ONNX Runtime runs model inference directly in the browser using `onnxruntime-web`.
+3. **Feature Scaling:** Data scaler model ensures consistent normalization for all input features.
+4. **Real-Time Processing:** Analyzes network traffic packets and returns threat classification with confidence scores.
+5. **Feature Importance:** Provides granular insights into why specific traffic was flagged as a threat.
+
+---
+
+## Architecture
+
+**Deployed Architecture:**
+- **Frontend:** React/Vite SPA hosted on Firebase Hosting
+- **Backend Services:** Firebase (Firestore database, Firebase Authentication)
+- **ML Inference:** Browser-side ONNX inference (no backend GPU required)
+- **Data Storage:** Firestore documents for scans, users, and audit logs
+
+**Development:**
+- Local Vite dev server for frontend development
+- Firebase Emulator Suite for local testing (optional)
 
 ---
 
 ## Security & Compliance
 
-- **Role-Based Access Control (RBAC):** Distinct permissions for standard users and system administrators.
-- **Secure Audit Trail:** Every scan is logged with a persistent record for forensic analysis.
-- **Data Privacy:** Localized database storage ensures sensitive network metadata remains within the controlled environment.
+- **Firebase Authentication:** Secure user authentication with email/password and session management
+- **Role-Based Access Control (RBAC):** Distinct permissions for standard users and system administrators
+- **Firestore Security Rules:** Row-level security enforced at the database layer
+- **Secure Audit Trail:** Every scan is logged with persistent records for forensic analysis
+- **Data Privacy:** All sensitive data stored in Firestore with appropriate access controls
 
 ---
 
@@ -86,6 +111,7 @@ The system utilizes custom ML models for high-precision network intrusion detect
 # Generate production build
 npm run build
 
-# Start production server
-npm start
+# Deploy to Firebase Hosting
+firebase deploy --only hosting
 ```
+
