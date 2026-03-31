@@ -69,6 +69,8 @@ export default function Navbar() {
     }
   }
 
+  const initials = user?.fullName?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'
+
   return (
     <>
       <header className="sticky top-0 inset-x-0 h-14 sm:h-16 bg-white/80 backdrop-blur-xl border-b border-navy-100/60 flex items-center px-3 sm:px-4 md:px-6 gap-2 sm:gap-4 z-50 shadow-[0_1px_3px_rgba(13,27,62,0.05)]">
