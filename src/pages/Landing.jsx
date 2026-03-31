@@ -89,7 +89,7 @@ export default function Landing() {
         { name: 'Home', path: '#home' },
         { name: 'Features', path: '#features' },
         { name: 'How It Works', path: '#how-it-works' },
-        { name: 'About Us', path: '#about-us' },
+        { name: 'About', path: '#about' },
         { name: 'Contact', path: '#contact' }
       ]
 
@@ -108,7 +108,7 @@ export default function Landing() {
       <Navbar />
 
       {/* ── Hero ───────────────────────────────────────────── */}
-      <section className="relative pt-20 pb-12 overflow-hidden">
+      <section id="home" className="relative pt-20 pb-12 overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 bg-mesh-gradient pointer-events-none" />
         <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-brand-blue/8 to-brand-purple/6 blur-3xl pointer-events-none" />

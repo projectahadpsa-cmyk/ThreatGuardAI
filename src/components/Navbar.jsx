@@ -36,6 +36,7 @@ export default function Navbar() {
   ]
 
   const landingNavItems = [
+    { href: '#home', label: 'Home' },
     { href: '#features', label: 'Features' },
     { href: '#how-it-works', label: 'How It Works' },
     { href: '#about', label: 'About' },
@@ -51,6 +52,12 @@ export default function Navbar() {
   }
 
   const handleLandingNavClick = (sectionId) => {
+    // If clicking on "home", just go to landing page
+    if (sectionId === 'home') {
+      navigate('/')
+      return
+    }
+    
     // If already on landing page, scroll to section
     if (location.pathname === '/') {
       const element = document.getElementById(sectionId)
