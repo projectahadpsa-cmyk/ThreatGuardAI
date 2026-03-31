@@ -42,17 +42,22 @@ export async function apiRegister({ fullName, email, password }) {
     
     await updateFbProfile(user, { displayName: fullName });
     
-    // Create user profile in Firestore
+    const token = await user.getIdToken();
+    
+    // Create user profile in Firestore (non-blocking - fire and forget with error logging)
     const userProfile = {
       fullName,
       email,
-      role: 'user', // Default role
+      role: 'user',
       createdAt: serverTimestamp(),
     };
     
-    await setDoc(doc(db, 'users', user.uid), userProfile);
+    setDoc(doc(db, 'users', user.uid), userProfile).catch(err => {
+      console.warn('⚠️ Could not save user profile to Firestore:', err.message);
+      // Don't throw - user is still authenticated
+    });
     
-    return { user: { id: user.uid, fullName, email, role: 'user' }, token: await user.getIdToken() };
+    return { user: { id: user.uid, fullName, email, role: 'user' }, token };
   } catch (error) {
     const errorMsg = getErrorMessage(error);
     const err = new Error(errorMsg.message);
@@ -67,16 +72,23 @@ export async function apiLogin(email, password) {
     const user = userCredential.user;
     const token = await user.getIdToken();
     
-    // Fetch profile from Firestore with fallback
+    // Fetch profile from Firestore with immediate timeout fallback
     let profile = { fullName: user.displayName, email: user.email, role: 'user' };
+    
+    // Use Promise.race to fallback after 3 seconds if Firestore is slow
     try {
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const firestorePromise = getDoc(doc(db, 'users', user.uid));
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Firestore timeout')), 3000)
+      );
+      
+      const userDoc = await Promise.race([firestorePromise, timeoutPromise]);
       if (userDoc.exists()) {
         profile = userDoc.data();
       }
     } catch (err) {
-      console.warn('⚠️ Firestore offline, using basic profile:', err.message);
-      // Continue with basic profile if Firestore is unavailable
+      console.warn('⚠️ Firestore unavailable, using basic profile:', err.message);
+      // Continue with basic profile if Firestore is unavailable or times out
     }
     
     return { user: { id: user.uid, ...profile }, token };

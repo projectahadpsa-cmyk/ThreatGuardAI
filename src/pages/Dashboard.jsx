@@ -110,35 +110,35 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-6 animate-fade-in">
-        <div className="h-20 bg-white rounded-3xl animate-pulse" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          {[0,1,2,3].map(i => <div key={i} className="h-32 bg-white rounded-3xl animate-pulse" />)}
+      <div className="space-y-8 animate-fade-in">
+        <div className="h-24 bg-white rounded-3xl animate-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[0,1,2,3].map(i => <div key={i} className="h-36 bg-white rounded-3xl animate-pulse" />)}
         </div>
-        <div className="grid lg:grid-cols-3 gap-5">
-          <div className="lg:col-span-2 h-64 bg-white rounded-3xl animate-pulse" />
-          <div className="h-64 bg-white rounded-3xl animate-pulse" />
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 h-72 bg-white rounded-3xl animate-pulse" />
+          <div className="h-72 bg-white rounded-3xl animate-pulse" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2">
         <div>
           <h1 className="page-title">{greeting}, {user?.fullName?.split(' ')[0]} 👋</h1>
-          <p className="section-subtitle mt-1">
+          <p className="section-subtitle mt-2">
             {isAdmin ? 'System-wide security overview and administrative controls.' : "Here's what's happening in your network analysis."}
           </p>
         </div>
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <button onClick={handleExportReport} className="btn-ghost text-xs gap-1.5 border border-navy-100 bg-white">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 self-start sm:self-auto">
+          <button onClick={handleExportReport} className="btn-ghost text-xs gap-1.5 border border-navy-100 bg-white justify-center">
             <FileText size={14} /> Export Report
           </button>
           {!isAdmin && (
-            <Link to="/app/detection" className="btn-primary">
+            <Link to="/app/detection" className="btn-primary justify-center">
               <Search size={16} /> Run New Scan <ArrowRight size={15} />
             </Link>
           )}
@@ -147,10 +147,10 @@ export default function Dashboard() {
 
       {/* Security Operations Center (SOC) Section */}
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h2 className="text-xl font-bold text-navy-900 tracking-tight">Security Operations Center</h2>
-            <p className="text-xs text-navy-400 mt-1 uppercase tracking-widest font-bold">Real-Time Threat Intelligence & System Monitoring</p>
+            <p className="text-xs text-navy-400 mt-1.5 uppercase tracking-widest font-bold">Real-Time Threat Intelligence & System Monitoring</p>
           </div>
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-brand-blue/5 border border-brand-blue/10 rounded-xl">
             <div className="w-2 h-2 bg-brand-blue rounded-full animate-pulse" />
@@ -158,8 +158,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-5">
-          <div className="lg:col-span-2 space-y-5">
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
             <ThreatMap />
             <SystemHealth />
           </div>
@@ -172,7 +172,7 @@ export default function Dashboard() {
       {/* Admin Specific Section */}
       {isAdmin && adminStats && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {ADMIN_CARDS.map(({ title, value, icon: Icon, color, bg, iconBg }) => (
               <div key={title} className="stat-card">
                 <div className={`w-11 h-11 rounded-2xl ${bg} flex items-center justify-center flex-shrink-0`}>
@@ -188,14 +188,14 @@ export default function Dashboard() {
             ))}
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-5">
+          <div className="grid lg:grid-cols-2 gap-6">
             <div className="card">
-              <h3 className="font-bold text-navy-900 mb-4">User Roles Distribution</h3>
-              <div className="space-y-3">
+              <h3 className="font-bold text-navy-900 mb-5">User Roles Distribution</h3>
+              <div className="space-y-2.5">
                 {adminStats.roles.map(r => (
-                  <div key={r.role} className="flex items-center justify-between p-3 bg-navy-50 rounded-xl">
+                  <div key={r.role} className="flex items-center justify-between p-3.5 bg-navy-50 rounded-xl border border-navy-100/50 hover:bg-navy-100/50 transition-colors">
                     <span className="text-sm font-medium text-navy-700 capitalize">{r.role}s</span>
-                    <span className="text-sm font-bold text-navy-900">{r.count}</span>
+                    <span className="text-sm font-bold text-navy-900 bg-white px-3 py-1 rounded-lg">{r.count}</span>
                   </div>
                 ))}
               </div>

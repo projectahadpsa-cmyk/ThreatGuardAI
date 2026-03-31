@@ -50,7 +50,24 @@ export default function Navbar() {
     navigate('/')
   }
 
-  const initials = user?.fullName?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'
+  const handleLandingNavClick = (sectionId) => {
+    // If already on landing page, scroll to section
+    if (location.pathname === '/') {
+      const element = document.getElementById(sectionId)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' })
+      }
+    } else {
+      // Navigate to landing and then scroll
+      navigate('/')
+      setTimeout(() => {
+        const element = document.getElementById(sectionId)
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' })
+        }
+      }, 100)
+    }
+  }
 
   return (
     <>
@@ -61,9 +78,11 @@ export default function Navbar() {
           <Menu size={18} className="sm:size-5" />
         </button>
 
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-1.5 sm:gap-2.5 mr-2 sm:mr-4 flex-shrink-0">
-          <img src="/logo.png" alt="ThreatGuardAI" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
+        {/* Logo with Container */}
+        <Link to="/" className="flex items-center gap-1.5 sm:gap-2.5 mr-2 sm:mr-4 flex-shrink-0 group">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-white border border-navy-100/40 shadow-sm flex items-center justify-center group-hover:shadow-md transition-all overflow-hidden p-1.5">
+            <img src="/logo.png" alt="ThreatGuardAI" className="w-full h-full object-contain" />
+          </div>
           <p className="hidden sm:block text-navy-900 font-bold text-base sm:text-lg tracking-tight whitespace-nowrap">
             ThreatGuard<span className="text-brand-blue">AI</span>
           </p>
@@ -85,10 +104,10 @@ export default function Navbar() {
             ))
           ) : (
             landingNavItems.map(({ href, label }) => (
-              <a key={href} href={href}
-                className="px-2 lg:px-4 py-2 text-xs lg:text-sm font-medium text-navy-600 hover:text-navy-900 hover:bg-navy-50 rounded-lg lg:rounded-xl transition-all whitespace-nowrap">
+              <button key={href} onClick={() => handleLandingNavClick(href.slice(1))}
+                className="px-2 lg:px-4 py-2 text-xs lg:text-sm font-medium text-navy-600 hover:text-navy-900 hover:bg-navy-50 rounded-lg lg:rounded-xl transition-all whitespace-nowrap cursor-pointer">
                 {label}
-              </a>
+              </button>
             ))
           )}
         </nav>
@@ -181,7 +200,9 @@ export default function Navbar() {
               {/* Mobile Menu Header */}
               <div className="p-6 border-b border-navy-50 flex items-center justify-between">
                 <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2.5">
-                  <img src="/logo.png" alt="ThreatGuardAI" className="w-8 h-8 object-contain" />
+                  <div className="w-8 h-8 rounded-lg bg-white border border-navy-100/40 shadow-sm flex items-center justify-center overflow-hidden p-1">
+                    <img src="/logo.png" alt="ThreatGuardAI" className="w-full h-full object-contain" />
+                  </div>
                   <p className="text-navy-900 font-bold text-sm">ThreatGuard<span className="text-brand-blue">AI</span></p>
                 </Link>
                 <button onClick={() => setMobileMenuOpen(false)} className="p-2 hover:bg-navy-50 rounded-lg text-navy-400">
@@ -206,10 +227,13 @@ export default function Navbar() {
                   ))
                 ) : (
                   landingNavItems.map(({ href, label }) => (
-                    <a key={href} href={href} onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-navy-600 hover:bg-navy-50/50 transition-all">
+                    <button key={href} onClick={() => {
+                      setMobileMenuOpen(false)
+                      handleLandingNavClick(href.slice(1))
+                    }}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-navy-600 hover:bg-navy-50/50 transition-all w-full text-left cursor-pointer">
                       <span>{label}</span>
-                    </a>
+                    </button>
                   ))
                 )}
               </nav>

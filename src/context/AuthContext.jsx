@@ -18,7 +18,12 @@ export function AuthProvider({ children }) {
         try {
           let profile = { fullName: fbUser.displayName, email: fbUser.email, role: 'user' };
           try {
-            const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
+            const firestorePromise = getDoc(doc(db, 'users', fbUser.uid));
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Firestore timeout')), 3000)
+            );
+            
+            const userDoc = await Promise.race([firestorePromise, timeoutPromise]);
             if (userDoc.exists()) {
               profile = userDoc.data();
             }
@@ -68,11 +73,19 @@ export function AuthProvider({ children }) {
   const refreshUser = useCallback(async () => {
     if (!auth.currentUser) return
     try {
-      const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid))
+      const firestorePromise = getDoc(doc(db, 'users', auth.currentUser.uid))
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Firestore timeout')), 3000)
+      )
+      
+      const userDoc = await Promise.race([firestorePromise, timeoutPromise])
       if (userDoc.exists()) {
         setUser({ id: auth.currentUser.uid, ...userDoc.data() })
       }
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.warn('⚠️ Could not refresh user profile:', err.message)
+      // Continue with existing user data if Firestore is unavailable
+    }
   }, [])
 
   return (

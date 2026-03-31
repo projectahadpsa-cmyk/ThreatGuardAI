@@ -59,46 +59,47 @@ export default function AdminUsers() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2">
         <div>
           <h1 className="page-title text-2xl sm:text-3xl">User Management</h1>
-          <p className="section-subtitle mt-1">Manage system users and their permissions</p>
+          <p className="section-subtitle mt-2">Manage system users and their permissions</p>
         </div>
         <div className="relative w-full sm:w-auto">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-navy-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-navy-400" />
           <input
             type="text"
             placeholder="Search users..."
-            className="input-field pl-10 w-full sm:w-64 text-sm"
+            className="input-field pl-10 w-full sm:w-80 text-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="card p-0 overflow-hidden overflow-x-auto">
+      <div className="card p-0 overflow-hidden overflow-x-auto border border-navy-100">
         <table className="data-table w-full min-w-max">
           <thead>
-            <tr>
-              <th>User</th>
-              <th>Role</th>
-              <th>Joined</th>
-              <th>Last Login</th>
-              <th className="text-right">Actions</th>
+            <tr className="bg-navy-50 border-b border-navy-100">
+              <th className="px-6 py-4">User</th>
+              <th className="px-6 py-4">Role</th>
+              <th className="px-6 py-4">Joined</th>
+              <th className="px-6 py-4">Last Login</th>
+              <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-navy-100">
             {loading ? (
               [...Array(5)].map((_, i) => (
                 <tr key={i} className="animate-pulse">
-                  <td colSpan="5" className="h-4 bg-navy-100 rounded"></td>
+                  <td colSpan="5" className="h-12 bg-navy-50 rounded"></td>
                 </tr>
               ))
             ) : users.length === 0 ? (
               <tr>
-                <td colSpan="5" className="px-6 py-12 text-center text-navy-500">
-                  No users found matching your search.
+                <td colSpan="5" className="px-6 py-16 text-center text-navy-500">
+                  <Users size={32} className="mx-auto mb-2 text-navy-300" />
+                  <p className="text-sm">No users found</p>
                 </td>
               </tr>
             ) : (

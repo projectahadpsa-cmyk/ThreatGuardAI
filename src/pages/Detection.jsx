@@ -252,7 +252,7 @@ export default function Detection() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
       {/* Scanning Progress Overlay */}
       <AnimatePresence>
         {analyzing && (

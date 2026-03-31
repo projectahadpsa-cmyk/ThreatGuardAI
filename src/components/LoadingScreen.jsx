@@ -74,7 +74,7 @@ export default function LoadingScreen() {
         transition={{ delay: 1.2 }}
         className="absolute bottom-12 text-[10px] uppercase tracking-[0.2em] text-navy-300 font-bold"
       >
-        Enterprise Grade Intrusion Detection
+       
       </motion.div>
     </div>
   )

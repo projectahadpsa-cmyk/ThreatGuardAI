@@ -88,21 +88,21 @@ export default function History() {
   const totalPages = Math.ceil(total / limit)
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2">
         <div>
           <h1 className="page-title">Scan History</h1>
-          <p className="section-subtitle mt-1">Review and manage your past network intrusion detections.</p>
+          <p className="section-subtitle mt-2">Review and manage your past network intrusion detections.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={handleExportPDF} className="btn-ghost text-xs gap-1.5 border border-navy-100">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <button onClick={handleExportPDF} className="btn-ghost text-xs gap-1.5 border border-navy-100 justify-center">
             <FileText size={14} /> Export PDF
           </button>
-          <button onClick={handleExportCSV} className="btn-ghost text-xs gap-1.5 border border-navy-100">
+          <button onClick={handleExportCSV} className="btn-ghost text-xs gap-1.5 border border-navy-100 justify-center">
             <Download size={14} /> Export CSV
           </button>
-          <button onClick={() => setShowConfirm(true)} className="btn-ghost text-xs gap-1.5 border border-red-100 text-red-600 hover:bg-red-50">
+          <button onClick={() => setShowConfirm(true)} className="btn-ghost text-xs gap-1.5 border border-red-100 text-red-600 hover:bg-red-50 justify-center">
             <Trash2 size={14} /> Clear All
           </button>
         </div>
@@ -118,16 +118,16 @@ export default function History() {
       />
 
       {/* Filters */}
-      <div className="card p-4 flex flex-col md:flex-row gap-4">
+      <div className="card p-5 flex flex-col gap-4 md:flex-row md:items-center md:gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-400" size={16} />
           <input type="text" placeholder="Search by filename or verdict..."
-            className="input-field pl-10 h-10 text-sm"
+            className="input-field pl-10 h-11 text-sm"
             value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} />
         </div>
-        <div className="flex items-center gap-2">
-          <Filter size={16} className="text-navy-400 ml-2" />
-          <select className="input-field h-10 text-sm py-0 pr-8 min-w-[140px]"
+        <div className="flex items-center gap-3 md:gap-2">
+          <Filter size={16} className="text-navy-400" />
+          <select className="input-field h-11 text-sm py-0 pr-8 min-w-[150px]"
             value={verdict} onChange={e => { setVerdict(e.target.value); setPage(1) }}>
             <option value="all">All Verdicts</option>
             <option value="attack">Attacks Only</option>

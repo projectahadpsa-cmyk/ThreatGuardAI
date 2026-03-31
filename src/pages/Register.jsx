@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { User, Mail, Lock, Eye, EyeOff, Shield, ArrowRight, AlertCircle, CheckCircle2, UserCog, ArrowLeft } from 'lucide-react'
+import { User, Mail, Lock, Eye, EyeOff, Shield, ArrowRight, AlertCircle, CheckCircle2, UserCog, ArrowLeft, ChevronRight } from 'lucide-react'
 import { useAuth }  from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 
@@ -72,11 +72,12 @@ export default function Register() {
       toast.success('Your account has been created successfully!', 'Welcome to ThreatGuardAI 🎉')
       navigate('/app/dashboard')
     } catch (err) {
-      setLoading(false)
       const msg = err.message || 'Registration failed. Please try again.'
       const title = err.title || 'Registration Failed'
       setError(msg)
       toast.error(msg, title)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -206,8 +207,27 @@ export default function Register() {
               <Link to="/login" className="font-bold text-brand-blue hover:text-blue-700 transition-colors">Sign in</Link>
             </p>
             <Link to="/" className="mt-4 text-sm font-bold text-navy-500 hover:text-navy-900 transition-colors flex items-center justify-center gap-2">
-              <ArrowLeft size={16} /> Back
+              <ArrowLeft size={16} /> Back to Home
             </Link>
+          </div>
+        </div>
+
+        {/* Right Panel Logo Section */}
+        <div className="w-full max-w-[480px] mt-12 text-center mb-8">
+          <div className="relative">
+            <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mx-auto mb-6 shadow-card-lg overflow-hidden p-3 border border-navy-100/40">
+              <img src="/logo.png" alt="ThreatGuardAI" className="w-full h-full object-contain" />
+            </div>
+            <h2 className="text-4xl font-extrabold text-navy-900 mb-4">Secure Your Infrastructure</h2>
+            <p className="text-navy-500 mb-8 max-w-lg mx-auto">Join security professionals worldwide using ThreatGuardAI for intelligent traffic analysis.</p>
+            <div className="flex items-center justify-center gap-2 md:gap-4 flex-wrap">
+              <button onClick={(e) => {e.preventDefault(); window.location.href = '/#features'}} className="inline-flex items-center gap-2 bg-brand-blue text-white font-bold px-6 py-3 rounded-2xl hover:bg-blue-700 transition-all shadow-lg text-sm">
+                Features
+              </button>
+              <a href="/#how-it-works" className="inline-flex items-center gap-2 bg-white text-navy-900 font-bold px-6 py-3 rounded-2xl hover:bg-navy-50 transition-all shadow-lg text-sm border border-navy-100">
+                How It Works
+              </a>
+            </div>
           </div>
         </div>
       </div>
