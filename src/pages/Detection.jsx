@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { useAuth }  from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { detectSingle, detectBatch, healthCheck } from '../services/api'
+import { loadMLModels } from '../services/inference'
 import clsx from 'clsx'
 import ConfirmModal from '../components/ConfirmModal'
 
@@ -97,6 +98,7 @@ export default function Detection() {
   const location  = useLocation()
 
   const [mode,       setMode]       = useState('manual')
+  const [modelsLoaded, setModelsLoaded] = useState(false)
 
   useEffect(() => {
     const params = new URLSearchParams(location.search)
@@ -104,6 +106,17 @@ export default function Detection() {
     if (m && ['manual', 'json', 'csv'].includes(m)) {
       setMode(m)
     }
+
+    // Load ML models when component mounts
+    loadMLModels()
+      .then(() => {
+        console.log('ML Models loaded for Detection page');
+        setModelsLoaded(true);
+      })
+      .catch(err => {
+        console.error('Error loading ML models:', err);
+        setModelsLoaded(true); // Still allow detection even if models fail
+      });
   }, [location.search])
   const [form,       setForm]       = useState(INIT_FORM)
   const [jsonInput,  setJsonInput]  = useState(JSON.stringify(INIT_FORM, null, 2))

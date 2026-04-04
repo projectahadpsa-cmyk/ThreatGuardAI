@@ -1,55 +1,51 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { Suspense, lazy, useEffect } from 'react'
 import { AuthProvider, useAuth }  from './context/AuthContext'
 import { ToastProvider } from './context/ToastContext'
-import { loadMLModels } from './services/inference'
 import ProtectedRoute    from './components/ProtectedRoute'
 import LoadingScreen     from './components/LoadingScreen'
 import { AnimatePresence, motion } from 'motion/react'
 
-import Landing   from './pages/Landing'
-import Login     from './pages/Login'
-import Register  from './pages/Register'
-import ForgotPassword from './pages/ForgotPassword'
-import TermsOfService from './pages/TermsOfService'
-import PrivacyPolicy from './pages/PrivacyPolicy'
-import Dashboard from './pages/Dashboard'
-import Detection from './pages/Detection'
-import Results   from './pages/Results'
-import History   from './pages/History'
-import Profile   from './pages/Profile'
-import AdminUsers from './pages/AdminUsers'
-import AdminReports from './pages/AdminReports'
-import AdminSettings from './pages/AdminSettings'
-import ApiKeyManagement from './pages/ApiKeyManagement'
-import AppLayout from './components/AppLayout'
+// Lazy load all pages for better performance
+const Landing = lazy(() => import('./pages/Landing'))
+const Login = lazy(() => import('./pages/Login'))
+const Register = lazy(() => import('./pages/Register'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const TermsOfService = lazy(() => import('./pages/TermsOfService'))
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Detection = lazy(() => import('./pages/Detection'))
+const Results = lazy(() => import('./pages/Results'))
+const History = lazy(() => import('./pages/History'))
+const Profile = lazy(() => import('./pages/Profile'))
+const AdminUsers = lazy(() => import('./pages/AdminUsers'))
+const AdminReports = lazy(() => import('./pages/AdminReports'))
+const AdminSettings = lazy(() => import('./pages/AdminSettings'))
+const ApiKeyManagement = lazy(() => import('./pages/ApiKeyManagement'))
+const AppLayout = lazy(() => import('./components/AppLayout'))
+const Navbar = lazy(() => import('./components/Navbar'))
 
-import Navbar from './components/Navbar'
+// Preload critical routes
+const preloadRoutes = () => {
+  // Preload dashboard and detection as they are most used
+  import('./pages/Dashboard')
+  import('./pages/Detection')
+}
 
 function AppContent() {
   const { loading } = useAuth()
-  const [modelsLoaded, setModelsLoaded] = useState(false)
+  const location = useLocation()
 
   useEffect(() => {
-    // Load models in background without blocking UI
-    loadMLModels()
-      .then(() => {
-        console.log('Models loaded');
-        setModelsLoaded(true);
-      })
-      .catch(err => {
-        console.error('Error loading models, using fallback:', err);
-        setModelsLoaded(true); // Still set to true so UI shows
-      });
-    
-    // Skip default user seeding - users will register/login manually
-    // Don't seed users as it can interfere with authentication
+    // Preload critical routes after initial load
+    const timer = setTimeout(preloadRoutes, 2000)
+    return () => clearTimeout(timer)
   }, [])
 
   return (
     <div className="min-h-screen flex flex-col">
       <AnimatePresence mode="wait">
-        {(loading || !modelsLoaded) ? (
+        {loading ? (
           <motion.div
             key="loading"
             initial={{ opacity: 1 }}
@@ -67,40 +63,42 @@ function AppContent() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex flex-col flex-1"
           >
-            <Routes>
-              {/* Public */}
-              <Route path="/"         element={<Landing />} />
-              <Route path="/login"    element={<><Navbar /><Login /></>} />
-              <Route path="/register" element={<><Navbar /><Register /></>} />
-              <Route path="/forgot-password" element={<><Navbar /><ForgotPassword /></>} />
-              <Route path="/terms"    element={<><Navbar /><TermsOfService /></>} />
-              <Route path="/privacy"  element={<><Navbar /><PrivacyPolicy /></>} />
+            <Suspense fallback={<LoadingScreen />}>
+              <Routes>
+                {/* Public */}
+                <Route path="/"         element={<Landing />} />
+                <Route path="/login"    element={<Suspense fallback={<div>Loading...</div>}><Navbar /><Login /></Suspense>} />
+                <Route path="/register" element={<Suspense fallback={<div>Loading...</div>}><Navbar /><Register /></Suspense>} />
+                <Route path="/forgot-password" element={<Suspense fallback={<div>Loading...</div>}><Navbar /><ForgotPassword /></Suspense>} />
+                <Route path="/terms"    element={<Suspense fallback={<div>Loading...</div>}><Navbar /><TermsOfService /></Suspense>} />
+                <Route path="/privacy"  element={<Suspense fallback={<div>Loading...</div>}><Navbar /><PrivacyPolicy /></Suspense>} />
 
-              {/* Protected — wrapped in shared sidebar layout */}
-              <Route
-                path="/app"
-                element={
-                  <ProtectedRoute>
-                    <AppLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index              element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="dashboard"  element={<Dashboard />} />
-                <Route path="detection"  element={<Detection />} />
-                <Route path="results"    element={<Results />} />
-                <Route path="history"    element={<History />} />
-                <Route path="api-keys"   element={<ApiKeyManagement />} />
-                <Route path="profile"    element={<Profile />} />
-                
-                {/* Admin Routes */}
-                <Route path="admin/users"    element={<AdminUsers />} />
-                <Route path="admin/reports"  element={<AdminReports />} />
-                <Route path="admin/settings" element={<AdminSettings />} />
-              </Route>
+                {/* Protected — wrapped in shared sidebar layout */}
+                <Route
+                  path="/app"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index              element={<Navigate to="/app/dashboard" replace />} />
+                  <Route path="dashboard"  element={<Dashboard />} />
+                  <Route path="detection"  element={<Detection />} />
+                  <Route path="results"    element={<Results />} />
+                  <Route path="history"    element={<History />} />
+                  <Route path="api-keys"   element={<ApiKeyManagement />} />
+                  <Route path="profile"    element={<Profile />} />
+                  
+                  {/* Admin Routes */}
+                  <Route path="admin/users"    element={<AdminUsers />} />
+                  <Route path="admin/reports"  element={<AdminReports />} />
+                  <Route path="admin/settings" element={<AdminSettings />} />
+                </Route>
 
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,6 +1,7 @@
 import { motion } from 'motion/react'
+import { memo } from 'react'
 
-export default function LoadingScreen() {
+const LoadingScreen = memo(() => {
   return (
     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#F8FAFF]">
       {/* Background decorative elements */}
@@ -78,4 +79,8 @@ export default function LoadingScreen() {
       </motion.div>
     </div>
   )
-}
+})
+
+LoadingScreen.displayName = 'LoadingScreen'
+
+export default LoadingScreen

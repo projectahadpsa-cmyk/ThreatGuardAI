@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, memo } from 'react'
 import * as d3 from 'd3'
 import * as topojson from 'topojson-client'
 import { motion } from 'motion/react'
 
-export default function ThreatMap() {
+const ThreatMap = memo(() => {
   const svgRef = useRef(null)
   const [attacks, setAttacks] = useState([])
 
@@ -136,4 +136,8 @@ export default function ThreatMap() {
       </div>
     </div>
   )
-}
+})
+
+ThreatMap.displayName = 'ThreatMap'
+
+export default ThreatMap

@@ -80,19 +80,19 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 inset-x-0 h-14 sm:h-16 bg-white/80 backdrop-blur-xl border-b border-navy-100/60 flex items-center px-3 sm:px-4 md:px-6 gap-2 sm:gap-4 z-50 shadow-[0_1px_3px_rgba(13,27,62,0.05)]">
+      <header className="sticky top-0 inset-x-0 h-16 sm:h-20 lg:h-24 bg-white/80 backdrop-blur-xl border-b border-navy-100/60 flex items-center px-3 sm:px-4 md:px-6 gap-2 sm:gap-4 z-50 shadow-[0_1px_3px_rgba(13,27,62,0.05)]">
         {/* Hamburger (Mobile Only) */}
         <button onClick={() => setMobileMenuOpen(true)}
-          className="md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-navy-50 flex items-center justify-center text-navy-500 hover:bg-navy-100 transition-all flex-shrink-0">
-          <Menu size={18} className="sm:size-5" />
+          className="md:hidden w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg sm:rounded-xl bg-navy-50 flex items-center justify-center text-navy-500 hover:bg-navy-100 transition-all flex-shrink-0">
+          <Menu size={20} className="sm:size-5 lg:size-6" />
         </button>
 
         {/* Logo with Container */}
         <Link to="/" className="flex items-center gap-1.5 sm:gap-2.5 mr-2 sm:mr-4 flex-shrink-0 group">
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-white border border-navy-100/40 shadow-sm flex items-center justify-center group-hover:shadow-md transition-all overflow-hidden p-1.5">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-lg sm:rounded-xl bg-white border border-navy-100/40 shadow-sm flex items-center justify-center group-hover:shadow-md transition-all overflow-hidden p-1.5">
             <img src="/logo.png" alt="ThreatGuardAI" className="w-full h-full object-contain" />
           </div>
-          <p className="hidden sm:block text-navy-900 font-bold text-base sm:text-lg tracking-tight whitespace-nowrap">
+          <p className="hidden sm:block text-navy-900 font-bold text-lg sm:text-xl lg:text-2xl tracking-tight whitespace-nowrap">
             ThreatGuard<span className="text-brand-blue">AI</span>
           </p>
         </Link>
@@ -103,7 +103,7 @@ export default function Navbar() {
             allNavItems.map(({ to, label }) => (
               <NavLink key={to} to={to}
                 className={({ isActive }) => clsx(
-                  'flex items-center gap-1 px-2 lg:px-3 py-2 rounded-lg lg:rounded-xl text-xs lg:text-sm font-bold transition-all whitespace-nowrap',
+                  'flex items-center gap-1 px-3 lg:px-4 py-2.5 lg:py-3 rounded-lg lg:rounded-xl text-sm lg:text-base font-semibold transition-all whitespace-nowrap',
                   isActive
                     ? 'bg-navy-50 text-brand-blue'
                     : 'text-navy-500 hover:text-navy-900 hover:bg-navy-50/50'
@@ -114,7 +114,7 @@ export default function Navbar() {
           ) : (
             landingNavItems.map(({ href, label }) => (
               <button key={href} onClick={() => handleLandingNavClick(href.slice(1))}
-                className="px-2 lg:px-4 py-2 text-xs lg:text-sm font-medium text-navy-600 hover:text-navy-900 hover:bg-navy-50 rounded-lg lg:rounded-xl transition-all whitespace-nowrap cursor-pointer">
+                className="px-3 lg:px-4 py-2.5 lg:py-3 text-sm lg:text-base font-medium text-navy-600 hover:text-navy-900 hover:bg-navy-50 rounded-lg lg:rounded-xl transition-all whitespace-nowrap cursor-pointer">
                 {label}
               </button>
             ))
@@ -124,20 +124,20 @@ export default function Navbar() {
         <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
           {user ? (
             <>
-              <button className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-navy-50 flex items-center justify-center text-navy-500 hover:bg-navy-100 transition-all relative flex-shrink-0">
-                <Bell size={16} className="sm:size-5" />
+              <button className="w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg sm:rounded-xl bg-navy-50 flex items-center justify-center text-navy-500 hover:bg-navy-100 transition-all relative flex-shrink-0">
+                <Bell size={18} className="sm:size-5 lg:size-6" />
                 <span className="absolute top-1 right-1 sm:top-2 sm:right-2 w-1.5 h-1.5 bg-brand-blue rounded-full" />
               </button>
               
               <div className="relative">
                 <button onClick={() => setUserMenuOpen(v => !v)}
-                  className="flex items-center gap-1.5 sm:gap-2.5 pl-1.5 sm:pl-2 pr-2 sm:pr-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl hover:bg-navy-50 transition-all whitespace-nowrap">
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center text-white text-xs font-bold shadow-glow-sm flex-shrink-0">
+                  className="flex items-center gap-1.5 sm:gap-2.5 pl-1.5 sm:pl-2 pr-2 sm:pr-3 py-1.5 sm:py-2 lg:py-2.5 rounded-lg sm:rounded-xl hover:bg-navy-50 transition-all whitespace-nowrap">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center text-white text-sm lg:text-base font-bold shadow-glow-sm flex-shrink-0">
                     {initials}
                   </div>
                   <div className="hidden sm:block text-left">
-                    <p className="text-xs font-semibold text-navy-800 leading-none whitespace-nowrap">{user?.fullName}</p>
-                    <p className="text-[10px] text-navy-400 mt-0.5 capitalize whitespace-nowrap">{user?.role}</p>
+                    <p className="text-sm lg:text-base font-semibold text-navy-800 leading-none whitespace-nowrap">{user?.fullName}</p>
+                    <p className="text-xs lg:text-sm text-navy-400 mt-0.5 capitalize whitespace-nowrap">{user?.role}</p>
                   </div>
                   <ChevronDown size={12} className="text-navy-400 sm:size-3.5 hidden sm:block" />
                 </button>
@@ -167,11 +167,11 @@ export default function Navbar() {
             </>
           ) : (
             <div className="flex items-center gap-2 sm:gap-3">
-              <Link to="/login" className="btn-ghost text-navy-700 text-xs sm:text-sm">Sign In</Link>
-              <Link to="/register" className="btn-primary text-xs sm:text-sm">
+              <Link to="/login" className="btn-ghost text-navy-700 text-sm sm:text-base lg:text-lg px-4 lg:px-6 py-2 lg:py-3">Sign In</Link>
+              <Link to="/register" className="btn-primary text-sm sm:text-base lg:text-lg px-4 lg:px-6 py-2 lg:py-3">
                 <span className="hidden sm:inline">Get Started</span>
                 <span className="sm:hidden">Start</span>
-                <ArrowRight size={14} className="sm:size-4" />
+                <ArrowRight size={16} className="sm:size-4 lg:size-5" />
               </Link>
             </div>
           )}
